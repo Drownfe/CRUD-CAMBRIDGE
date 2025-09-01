@@ -36,61 +36,72 @@ Aplicación web para la **gestión de Áreas, Empleados, Oficinas y Salones** de
    ```bash
    git clone https://github.com/Drownfe/CRUD-CAMBRIDGE
    cd CRUD-CAMBRIDGE
+   ```
 
-2. **Crea y activa un entorno virtual:**:
-    python -m venv venv
-    # Linux/macOS
-    source venv/bin/activate
-    # Windows PowerShell
-    venv\Scripts\activate
-    
-3. **Instala las dependencias:**:
-    pip install Flask
-    pip install pymongo
+2. **Crea y activa un entorno virtual**:
 
-4. **Configura tu conexión a MongoDB Atlas en app.py, reemplazando la variable uri con tu string de conexión:**:
-    uri = mongodb+srv://juanhernandez82161_db_user:3113700254@colegiocambridgecluster.trcaxho.mongodb.net/?retryWrites=true&w=majority&appName=ColegioCambridgeCluster"
-5. **Verifica que exista la carpeta templates/ con las vistas HTML**:
+   ```bash
+   python -m venv venv
+   # Linux/macOS
+   source venv/bin/activate
+   # Windows PowerShell
+   venv\Scripts\activate
+   ```
 
+3. **Instala las dependencias**:
 
-▶️ Uso
+   👉 Si tienes `requirements.txt`:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-Ejecuta la aplicación Flask: 
-    python app.py
+   👉 O instálalas manualmente:
+   ```bash
+   pip install Flask
+   pip install pymongo
+   ```
 
-    Abre tu navegador en:
+4. **Configura tu conexión a MongoDB Atlas** en `app.py`, reemplazando la variable `uri` con tu string de conexión:
 
-🌐 http://localhost:5000/areas
- → Listado de Áreas
+   ```python
+   uri = "mongodb+srv://<usuario>:<contraseña>@colegiocambridgecluster.xxxxx.mongodb.net/?retryWrites=true&w=majority"
+   ```
 
-👨‍🏫 http://localhost:5000/empleados
- → Listado de Empleados
+5. Verifica que exista la carpeta `templates/` con las vistas HTML.  
 
-🏢 http://localhost:5000/oficinas
- → Listado de Oficinas
+---
 
-🏫 http://localhost:5000/salones
- → Listado de Salones
+## ▶️ Uso
 
-También puedes probar los endpoints de la API REST:
+1. **Ejecuta la aplicación Flask**:
 
-GET /api/areas
+   ```bash
+   python app.py
+   ```
 
-POST /api/areas
+2. Abre tu navegador en:  
+   - 🌐 [http://localhost:5000/areas](http://localhost:5000/areas) → Listado de Áreas  
+   - 👨‍🏫 [http://localhost:5000/empleados](http://localhost:5000/empleados) → Listado de Empleados  
+   - 🏢 [http://localhost:5000/oficinas](http://localhost:5000/oficinas) → Listado de Oficinas  
+   - 🏫 [http://localhost:5000/salones](http://localhost:5000/salones) → Listado de Salones  
 
-PUT /api/areas/<id>
+3. También puedes probar los endpoints de la API REST:  
+   - `GET /api/areas`  
+   - `POST /api/areas`  
+   - `PUT /api/areas/<id>`  
+   - `DELETE /api/areas/<id>`  
 
-DELETE /api/areas/<id>
+---
 
-🚧 Estado del proyecto
+## 🚧 Estado del proyecto
 
-✅ CRUD completo de Áreas (Create, Read, Update, Delete).
-⏳ CRUD de Empleados, Oficinas y Salones en desarrollo.
-🔐 Falta agregar autenticación y validaciones extra.
+✅ CRUD completo de **Áreas** (Create, Read, Update, Delete).  
+⏳ CRUD de **Empleados, Oficinas y Salones** en desarrollo.  
+🔐 Falta agregar autenticación y validaciones extra.  
 
-📬 Contacto
+---
 
-👤 Desarrollado por Juan Hernández
-📧 Para dudas, sugerencias o colaboración → Abrir un issue en GitHub
+## 📬 Contacto
 
-
+👤 Desarrollado por **Juan Hernández**  
+📧 Para dudas, sugerencias o colaboración → [Abrir un issue en GitHub](https://github.com/Drownfe/CRUD-CAMBRIDGE/issues)  
