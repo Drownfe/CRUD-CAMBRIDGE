@@ -9,7 +9,6 @@ app = Flask(__name__)
 #   Conexión a MongoDB Atlas
 # ==============================
 uri = "mongodb+srv://juanhernandez82161_db_user:3113700254@colegiocambridgecluster.trcaxho.mongodb.net/?retryWrites=true&w=majority&appName=ColegioCambridgeCluster"
-
 client = MongoClient(uri, server_api=ServerApi('1'))
 db = client["CAMBRIDGE_DB"]
 
