@@ -9,22 +9,24 @@
 </head>
 <body>
     <div class="container">
-        <h1 class="page-title"><i class="fas fa-landmark"></i> Áreas del Colegio</h1>
+        <h1 class="page-title mb-4"><i class="fas fa-landmark"></i> Áreas del Colegio</h1>
 
-        <!-- Formulario para crear un área -->
-        <div class="card mb-4 p-3">
-            <h3><i class="fas fa-plus-circle"></i> Nueva Área</h3>
-            <form id="formArea">
-                <div class="mb-3">
-                    <label for="nombre" class="form-label">Nombre del Área</label>
-                    <input type="text" id="nombre" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label for="oficinas" class="form-label">Oficinas (separadas por coma)</label>
-                    <input type="text" id="oficinas" class="form-control">
-                </div>
-                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
+        <!-- Formulario compacto para crear un área -->
+        <div class="card mb-4 shadow-sm" style="max-width: 650px; margin: 0 auto;">
+          <div class="card-body">
+            <h5 class="card-title mb-3"><i class="fas fa-plus-circle"></i> Agregar Área</h5>
+            <form id="formArea" class="row g-2 align-items-center">
+              <div class="col-md-5">
+                <input type="text" id="nombre" class="form-control" placeholder="Nombre del Área" required>
+              </div>
+              <div class="col-md-5">
+                <input type="text" id="oficinas" class="form-control" placeholder="Oficinas (coma ,)">
+              </div>
+              <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-success"><i class="fas fa-save"></i></button>
+              </div>
             </form>
+          </div>
         </div>
 
         <!-- Contenedor donde se pintan las áreas -->
@@ -80,9 +82,14 @@
                 <div class="card custom-card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <span><i class="fas fa-landmark"></i> ${area.nombre}</span>
-                        <button class="btn btn-sm btn-warning" onclick="editarArea('${area._id}', '${area.nombre}', '${area.oficinas.join(", ")}')">
-                            <i class="fas fa-edit"></i> Editar
-                        </button>
+                        <div>
+                            <button class="btn btn-sm btn-warning me-2" onclick="editarArea('${area._id}', '${area.nombre}', '${area.oficinas.join(", ")}')">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="eliminarArea('${area._id}')">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
                     </div>
                     <ul class="list-group list-group-flush">
                         ${area.oficinas.map(o => `<li class="list-group-item"><i class="fas fa-door-open text-primary"></i> Oficina: ${o}</li>`).join("")}
@@ -111,7 +118,7 @@
         if (response.ok) {
             alert("Área creada correctamente ✅");
             document.getElementById("formArea").reset();
-            cargarAreas(); // refresca solo la lista
+            cargarAreas();
         } else {
             alert("Error al crear el área ❌");
         }
@@ -146,6 +153,22 @@
             alert("Error al actualizar el área ❌");
         }
     });
+
+    // ====== ELIMINAR ÁREA (DELETE) ======
+    async function eliminarArea(id) {
+        if (!confirm("¿Seguro que quieres eliminar esta área?")) return;
+
+        const response = await fetch(`/api/areas/${id}`, {
+            method: "DELETE"
+        });
+
+        if (response.ok) {
+            alert("Área eliminada correctamente 🗑️");
+            cargarAreas();
+        } else {
+            alert("Error al eliminar el área ❌");
+        }
+    }
 
     // Cargar al inicio
     cargarAreas();
