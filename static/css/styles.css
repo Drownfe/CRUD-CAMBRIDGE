@@ -55,6 +55,17 @@ body {
     font-size: 2rem;
 }
 
+/* ====== FORMULARIOS CRUD ====== */
+.form-card {
+    max-width: 900px;
+    margin: 0 auto 20px auto;
+    border-radius: 15px;
+}
+
+.form-card input {
+    font-size: 0.95rem;
+}
+
 /* ====== CARDS REUTILIZABLES ====== */
 .custom-card {
     border-radius: 20px;
@@ -69,20 +80,21 @@ body {
 }
 
 .custom-card .card-header {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: bold;
     background: linear-gradient(90deg, #1565c0 50%, #2196f3 100%);
     color: #fff;
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
-    padding: 16px 24px;
+    padding: 14px 20px;
 }
 
+/* ====== LISTAS GENERALES ====== */
 .custom-card .list-group-item {
     background-color: #f6faff;
     border: none;
     padding: 14px 20px;
-    font-size: 1rem;
+    font-size: 0.95rem;
     border-bottom: 1px solid #e6ecfb;
 }
 
@@ -92,12 +104,12 @@ body {
     border-bottom: none;
 }
 
-/* ====== LISTAS GENERALES ====== */
 .list-group-item {
     display: flex;
     align-items: center;
     gap: 8px;
 }
+
 .list-group-item strong {
     color: #1565c0;
     min-width: 120px;
@@ -113,11 +125,8 @@ body {
     color: #2196f3;
 }
 
+/* ====== TITULOS ====== */
 .card-title {
     font-weight: 600;
     color: #1565c0;
-}
-
-#formArea input {
-    font-size: 0.95rem;
 }
