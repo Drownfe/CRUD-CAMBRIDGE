@@ -72,6 +72,11 @@ def api_create_salon():
     salones_collection.insert_one(data)
     return {"message": "Salon creado"}, 201
 
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
