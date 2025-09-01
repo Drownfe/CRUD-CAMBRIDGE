@@ -50,12 +50,7 @@ Aplicación web para la **gestión de Áreas, Empleados, Oficinas y Salones** de
 
 3. **Instala las dependencias**:
 
-   👉 Si tienes `requirements.txt`:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-   👉 O instálalas manualmente:
+   👉 instálalas manualmente:
    ```bash
    pip install Flask
    pip install pymongo
@@ -64,7 +59,7 @@ Aplicación web para la **gestión de Áreas, Empleados, Oficinas y Salones** de
 4. **Configura tu conexión a MongoDB Atlas** en `app.py`, reemplazando la variable `uri` con tu string de conexión:
 
    ```python
-   uri = "mongodb+srv://<usuario>:<contraseña>@colegiocambridgecluster.xxxxx.mongodb.net/?retryWrites=true&w=majority"
+   uri = "mongodb+srv://juanhernandez82161_db_user:3113700254@colegiocambridgecluster.trcaxho.mongodb.net/?retryWrites=true&w=majority&appName=ColegioCambridgeCluster"
    ```
 
 5. Verifica que exista la carpeta `templates/` con las vistas HTML.  
