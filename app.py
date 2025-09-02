@@ -117,6 +117,42 @@ def api_delete_empleado(id):
     return {"message": "Empleado no encontrado"}, 404
 
 # ==============================
+#   API REST - OFICINAS (CRUD)
+# ==============================
+@app.route('/api/oficinas', methods=['GET'])
+def api_get_oficinas():
+    oficinas = list(oficinas_collection.find({}, {"codigo": 1, "idArea": 1, "empleados": 1}))
+    for o in oficinas:
+        o["_id"] = str(o["_id"])
+    return jsonify(oficinas)
+
+@app.route('/api/oficinas', methods=['POST'])
+def api_create_oficina():
+    data = request.json
+    if not data or "codigo" not in data:
+        return {"message": "Datos incompletos"}, 400
+    oficinas_collection.insert_one(data)
+    return {"message": "Oficina creada"}, 201
+
+@app.route('/api/oficinas/<string:id>', methods=['PUT'])
+def api_update_oficina(id):
+    data = request.json
+    result = oficinas_collection.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": data}
+    )
+    if result.modified_count > 0:
+        return {"message": "Oficina actualizada"}
+    return {"message": "Oficina no encontrada"}, 404
+
+@app.route('/api/oficinas/<string:id>', methods=['DELETE'])
+def api_delete_oficina(id):
+    result = oficinas_collection.delete_one({"_id": ObjectId(id)})
+    if result.deleted_count > 0:
+        return {"message": "Oficina eliminada"}
+    return {"message": "Oficina no encontrada"}, 404
+
+# ==============================
 #   Run App
 # ==============================
 if __name__ == '__main__':
