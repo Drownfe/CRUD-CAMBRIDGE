@@ -9,29 +9,160 @@
 </head>
 <body>
     <div class="container">
-        <h1 class="page-title"><i class="fas fa-chalkboard"></i> Salones del Colegio</h1>
+        <h1 class="page-title mb-4"><i class="fas fa-chalkboard"></i> Salones</h1>
 
-        <div class="row justify-content-center">
-            {% for salon in salones %}
-            <div class="col-lg-6 col-md-8">
-                <div class="card custom-card">
-                    <div class="card-header">
-                        <i class="fas fa-door-open"></i> Código: {{ salon.codigo }}
-                    </div>
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item"><strong>Área:</strong> {{ salon.idArea }}</li>
-                    </ul>
-                </div>
-            </div>
-            {% endfor %}
+        <!-- Formulario compacto para crear salón -->
+        <div class="card form-card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title mb-3"><i class="fas fa-plus-circle"></i> Agregar Salón</h5>
+            <form id="formSalon" class="row g-2 align-items-center">
+              <div class="col-md-6"><input type="text" id="codigo" class="form-control" placeholder="Código del Salón (ej: A101)" required></div>
+              <div class="col-md-6"><input type="text" id="idArea" class="form-control" placeholder="Área a la que pertenece"></div>
+              <div class="col-md-12 d-grid">
+                <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Guardar</button>
+              </div>
+            </form>
+          </div>
         </div>
 
+        <!-- Contenedor salones -->
+        <div id="salonesContainer" class="row justify-content-center"></div>
+
+        <!-- Botón volver -->
         <div class="text-center mt-4">
             <a href="/" class="btn btn-secondary btn-custom">
                 <i class="fas fa-arrow-left"></i> Volver al inicio
             </a>
         </div>
     </div>
+
+    <!-- Modal Editar Salón -->
+    <div class="modal fade" id="modalEditar" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Editar Salón</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form id="formEditar">
+              <input type="hidden" id="editId">
+              <div class="mb-2"><input type="text" id="editCodigo" class="form-control" placeholder="Código del Salón" required></div>
+              <div class="mb-2"><input type="text" id="editIdArea" class="form-control" placeholder="Área a la que pertenece"></div>
+              <button type="submit" class="btn btn-primary">Guardar cambios</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+    // ====== CARGAR SALONES (READ) ======
+    async function cargarSalones() {
+        const res = await fetch("/api/salones");
+        const salones = await res.json();
+
+        const container = document.getElementById("salonesContainer");
+        container.innerHTML = "";
+
+        salones.forEach(sal => {
+            const card = document.createElement("div");
+            card.className = "col-lg-6 col-md-8";
+            card.innerHTML = `
+                <div class="card custom-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-chalkboard"></i> ${sal.codigo}</span>
+                        <div>
+                            <button class="btn btn-sm btn-warning me-2" onclick="editarSalon('${sal._id}', '${sal.codigo}', '${sal.idArea || ""}')">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="eliminarSalon('${sal._id}')">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Área:</strong> ${sal.idArea || "-"}</li>
+                    </ul>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    // ====== CREAR SALÓN (CREATE) ======
+    document.getElementById("formSalon").addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const data = {
+            codigo: document.getElementById("codigo").value.trim(),
+            idArea: document.getElementById("idArea").value.trim()
+        };
+
+        const response = await fetch("/api/salones", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            alert("Salón creado correctamente ✅");
+            document.getElementById("formSalon").reset();
+            cargarSalones();
+        } else {
+            alert("Error al crear el salón ❌");
+        }
+    });
+
+    // ====== EDITAR SALÓN (UPDATE) ======
+    function editarSalon(id, codigo, idArea) {
+        document.getElementById("editId").value = id;
+        document.getElementById("editCodigo").value = codigo;
+        document.getElementById("editIdArea").value = idArea;
+        new bootstrap.Modal(document.getElementById("modalEditar")).show();
+    }
+
+    document.getElementById("formEditar").addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const id = document.getElementById("editId").value;
+        const data = {
+            codigo: document.getElementById("editCodigo").value.trim(),
+            idArea: document.getElementById("editIdArea").value.trim()
+        };
+
+        const response = await fetch(`/api/salones/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            alert("Salón actualizado correctamente ✅");
+            bootstrap.Modal.getInstance(document.getElementById("modalEditar")).hide();
+            cargarSalones();
+        } else {
+            alert("Error al actualizar el salón ❌");
+        }
+    });
+
+    // ====== ELIMINAR SALÓN (DELETE) ======
+    async function eliminarSalon(id) {
+        if (!confirm("¿Seguro que quieres eliminar este salón?")) return;
+
+        const response = await fetch(`/api/salones/${id}`, { method: "DELETE" });
+
+        if (response.ok) {
+            alert("Salón eliminado correctamente 🗑️");
+            cargarSalones();
+        } else {
+            alert("Error al eliminar el salón ❌");
+        }
+    }
+
+    // Cargar salones al inicio
+    cargarSalones();
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>

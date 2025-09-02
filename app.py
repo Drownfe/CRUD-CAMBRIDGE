@@ -153,6 +153,42 @@ def api_delete_oficina(id):
     return {"message": "Oficina no encontrada"}, 404
 
 # ==============================
+#   API REST - SALONES (CRUD)
+# ==============================
+@app.route('/api/salones', methods=['GET'])
+def api_get_salones():
+    salones = list(salones_collection.find({}, {"codigo": 1, "idArea": 1}))
+    for s in salones:
+        s["_id"] = str(s["_id"])
+    return jsonify(salones)
+
+@app.route('/api/salones', methods=['POST'])
+def api_create_salon():
+    data = request.json
+    if not data or "codigo" not in data:
+        return {"message": "Datos incompletos"}, 400
+    salones_collection.insert_one(data)
+    return {"message": "Salón creado"}, 201
+
+@app.route('/api/salones/<string:id>', methods=['PUT'])
+def api_update_salon(id):
+    data = request.json
+    result = salones_collection.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": data}
+    )
+    if result.modified_count > 0:
+        return {"message": "Salón actualizado"}
+    return {"message": "Salón no encontrado"}, 404
+
+@app.route('/api/salones/<string:id>', methods=['DELETE'])
+def api_delete_salon(id):
+    result = salones_collection.delete_one({"_id": ObjectId(id)})
+    if result.deleted_count > 0:
+        return {"message": "Salón eliminado"}
+    return {"message": "Salón no encontrado"}, 404
+
+# ==============================
 #   Run App
 # ==============================
 if __name__ == '__main__':
