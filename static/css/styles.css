@@ -1,132 +1,104 @@
-/* ====== ESTILOS GENERALES ====== */
+/* ---------------------------
+   Fondo y configuración base
+---------------------------- */
 body {
-    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    background: #e3f2fd; /* Azul claro uniforme */
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: 'Segoe UI', sans-serif;
 }
 
-/* ====== CARD PRINCIPAL DE BIENVENIDA ====== */
-.welcome-card {
-    background: #fff;
-    border-radius: 20px;
-    box-shadow: 0 8px 28px rgba(33, 123, 255, 0.25);
-    padding: 40px;
-    text-align: center;
-    max-width: 650px;
-    width: 100%;
-}
-
-.welcome-card h1 {
-    font-size: 2.2rem;
+/* ---------------------------
+   Títulos
+---------------------------- */
+.title-page {
     font-weight: bold;
-    color: #1565c0;
+    color: #1a4eb0;
     margin-bottom: 20px;
 }
 
-.welcome-card p {
-    font-size: 1.15rem;
-    margin-bottom: 35px;
-    color: #444;
+h2 {
+    font-weight: bold;
+    color: #1a4eb0;
+    margin-bottom: 20px;
 }
 
-/* ====== BOTONES DE NAVEGACIÓN ====== */
-.btn-custom {
+/* ---------------------------
+   Botones principales (menú)
+---------------------------- */
+.menu-btn {
+    width: 180px;
+    font-weight: bold;
     border-radius: 12px;
-    padding: 14px 26px;
-    font-size: 1.1rem;
-    margin: 10px;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.btn-custom:hover {
+.menu-btn:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
 }
 
-/* ====== PÁGINAS GENERALES ====== */
-.page-title {
-    margin: 40px 0;
-    text-align: center;
-    color: #1565c0;
-    font-weight: bold;
-    font-size: 2rem;
-}
-
-/* ====== FORMULARIOS CRUD ====== */
-.form-card {
-    max-width: 900px;
-    margin: 0 auto 20px auto;
+/* ---------------------------
+   Formularios
+---------------------------- */
+.card {
     border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 20px;
 }
 
-.form-card input {
-    font-size: 0.95rem;
-}
-
-/* ====== CARDS REUTILIZABLES ====== */
-.custom-card {
-    border-radius: 20px;
-    box-shadow: 0 8px 20px rgba(33, 123, 255, 0.13);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    margin-bottom: 30px;
-}
-
-.custom-card:hover {
-    transform: translateY(-5px) scale(1.02);
-    box-shadow: 0 20px 50px rgba(33, 123, 255, 0.25);
-}
-
-.custom-card .card-header {
-    font-size: 1.1rem;
+form .form-label {
     font-weight: bold;
-    background: linear-gradient(90deg, #1565c0 50%, #2196f3 100%);
+    color: #333;
+}
+
+form input, 
+form select {
+    border-radius: 8px;
+}
+
+/* ---------------------------
+   Botones de acción (CRUD)
+---------------------------- */
+.btn-action {
+    font-size: 0.9rem;
+    font-weight: bold;
+    padding: 5px 12px;
+    border-radius: 8px;
+}
+
+.btn-action i {
+    margin-right: 4px;
+}
+
+/* ---------------------------
+   Tablas
+---------------------------- */
+.table {
+    margin-top: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.table thead {
+    background-color: #1a4eb0;
     color: #fff;
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
-    padding: 14px 20px;
 }
 
-/* ====== LISTAS GENERALES ====== */
-.custom-card .list-group-item {
-    background-color: #f6faff;
-    border: none;
-    padding: 14px 20px;
-    font-size: 0.95rem;
-    border-bottom: 1px solid #e6ecfb;
+.table-striped tbody tr:nth-child(odd) {
+    background-color: #f2f6fc;
 }
 
-.custom-card .list-group-item:last-child {
-    border-bottom-left-radius: 20px;
-    border-bottom-right-radius: 20px;
-    border-bottom: none;
-}
-
-.list-group-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.list-group-item strong {
-    color: #1565c0;
-    min-width: 120px;
-}
-
-/* ====== ICONOS EN LISTAS ====== */
-.list-group-item i {
-    color: #42a5f5;
-}
-
-/* ====== COLOR EXTRA PARA SALONES ====== */
-.custom-card .fa-chalkboard {
-    color: #2196f3;
-}
-
-/* ====== TITULOS ====== */
-.card-title {
-    font-weight: 600;
-    color: #1565c0;
+/* ---------------------------
+   Botón volver al inicio
+---------------------------- */
+.back-btn {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-weight: bold;
 }
