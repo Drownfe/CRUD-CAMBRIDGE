@@ -1,6 +1,7 @@
 # 🎓 CRUD CAMBRIDGE - Proyecto Colegio 🚀
 
-Aplicación web para la **gestión de Áreas, Empleados, Oficinas y Salones** de un colegio, construida con **Flask** + **MongoDB Atlas**.  
+Aplicación web para la **gestión de Áreas, Empleados, Oficinas y Salones** del Colegio Cambridge.  
+Construida con **Flask + SQLAlchemy + MySQL**, integrando un modelo **relacional** con rutas CRUD completas y frontend en **HTML + Bootstrap + CSS**.
 
 > ⚠️ Proyecto en construcción 🚧 — se siguen agregando módulos y funcionalidades.
 
@@ -8,23 +9,22 @@ Aplicación web para la **gestión de Áreas, Empleados, Oficinas y Salones** de
 
 ## ✨ Características actuales
 
-- 🐍 **Backend en Flask** conectado a MongoDB Atlas.  
-- 📂 **Colecciones en la base de datos**:  
+- 🐍 **Backend en Flask** conectado a MySQL mediante SQLAlchemy.  
+- 📂 **Tablas en la base de datos**:  
   - `areas`  
   - `empleados`  
   - `oficinas`  
   - `salones`  
 - 🔗 **API REST** con rutas `GET`, `POST`, `PUT`, `DELETE`.  
-- 🎨 **Frontend responsivo** con Bootstrap, mostrando datos en cards y tablas dinámicas.  
-- 🔐 Conexión con GitHub lista (via SSH).  
-- 📊 Datos de prueba realistas en MongoDB.
+- 🎨 **Frontend responsivo** con Bootstrap y estilos propios en `static/css/styles.css`.  
+- 🔐 Modelo relacional con claves foráneas para asegurar integridad.  
 
 ---
 
 ## 🛠️ Requisitos
 
-- Python 3.8+  
-- Cuenta en MongoDB Atlas (cluster configurado)  
+- Python 3.10+  
+- MySQL Server 8+  
 - Virtualenv recomendado para aislar dependencias  
 
 ---
@@ -50,19 +50,42 @@ Aplicación web para la **gestión de Áreas, Empleados, Oficinas y Salones** de
 
 3. **Instala las dependencias**:
 
-   👉 instálalas manualmente:
    ```bash
-   pip install Flask
-   pip install pymongo
+   pip install -r requirements.txt
    ```
 
-4. **Configura tu conexión a MongoDB Atlas** en `app.py`, reemplazando la variable `uri` con tu string de conexión:
+   Si necesitas instalarlas manualmente:
 
-   ```python
-   uri = "mongodb+srv://juanhernandez82161_db_user:3113700254@colegiocambridgecluster.trcaxho.mongodb.net/?retryWrites=true&w=majority&appName=ColegioCambridgeCluster"
+   ```bash
+   pip install flask flask_sqlalchemy pymysql python-dotenv
    ```
 
-5. Verifica que exista la carpeta `templates/` con las vistas HTML.  
+4. **Configura la base de datos MySQL**:
+
+   - Entra a la consola de MySQL:
+
+     ```bash
+     mysql -u root -p
+     ```
+
+   - Cambia la autenticación de root (si es necesario):
+
+     ```sql
+     ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root1234';
+     FLUSH PRIVILEGES;
+     ```
+
+   - Crea la base de datos:
+
+     ```sql
+     CREATE DATABASE colegio_cambridge;
+     ```
+
+5. **Configura el archivo `.env`** en la raíz del proyecto:
+
+   ```
+   DB_URI=mysql+pymysql://root:root1234@localhost/colegio_cambridge
+   ```
 
 ---
 
@@ -90,9 +113,10 @@ Aplicación web para la **gestión de Áreas, Empleados, Oficinas y Salones** de
 
 ## 🚧 Estado del proyecto
 
-✅ CRUD completo de **Áreas** (Create, Read, Update, Delete).  
-⏳ CRUD de **Empleados, Oficinas y Salones** en desarrollo.  
-🔐 Falta agregar autenticación y validaciones extra.  
+✅ Migración completa de **MongoDB a MySQL relacional**.  
+✅ CRUD de **Áreas** operativo.  
+✅ CRUD de **Empleados, Oficinas y Salones** en desarrollo.  
+⏳ Pendiente agregar autenticación y validaciones extra.  
 
 ---
 
