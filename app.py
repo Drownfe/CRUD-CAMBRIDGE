@@ -1,195 +1,261 @@
 from flask import Flask, render_template, request, jsonify
-from pymongo.mongo_client import MongoClient
-from pymongo.server_api import ServerApi
-from bson import ObjectId
+from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
+import os
 
-app = Flask(__name__)
+# ==============================================
+# CONFIGURACIÓN DE FLASK
+# ==============================================
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
-# ==============================
-#   Conexión a MongoDB Atlas
-# ==============================
-uri = "mongodb+srv://juanhernandez82161_db_user:3113700254@colegiocambridgecluster.trcaxho.mongodb.net/?retryWrites=true&w=majority&appName=ColegioCambridgeCluster"
-client = MongoClient(uri, server_api=ServerApi('1'))
-db = client["CAMBRIDGE_DB"]
+app = Flask(
+    __name__,
+    template_folder=os.path.join(BASE_DIR, "templates"),
+    static_folder=os.path.join(BASE_DIR, "static")
+)
 
-# Colecciones
-areas_collection = db["areas"]
-empleados_collection = db["empleados"]
-oficinas_collection = db["oficinas"]
-salones_collection = db["salones"]
+CORS(app)
 
-# ==============================
-#   Rutas de vistas
-# ==============================
-@app.route('/')
-def home():
-    return render_template('index.html')
+# ==============================================
+# CONFIGURACIÓN DE MYSQL
+# ==============================================
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:root1234@localhost/colegio_cambridge'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-@app.route('/areas')
-def areas_view():
-    return render_template('areas.html')
+db = SQLAlchemy(app)
 
-@app.route('/empleados')
-def empleados_view():
-    return render_template('empleados.html')
+# ==============================================
+# MODELOS (Tablas)
+# ==============================================
+class Area(db.Model):
+    __tablename__ = "areas"
+    id_area = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    nombre = db.Column(db.String(100), unique=True, nullable=False)
 
-@app.route('/oficinas')
-def oficinas_view():
-    return render_template('oficinas.html')
+    oficinas = db.relationship("Oficina", backref="area", cascade="all, delete", passive_deletes=True)
+    empleados = db.relationship("Empleado", backref="area", cascade="all, delete", passive_deletes=True)
+    salones = db.relationship("Salon", backref="area", cascade="all, delete", passive_deletes=True)
 
-@app.route('/salones')
-def salones_view():
-    return render_template('salones.html')
+    def to_dict(self):
+        return {"id": self.id_area, "nombre": self.nombre}
 
-# ==============================
-#   API REST - ÁREAS (CRUD)
-# ==============================
-@app.route('/api/areas', methods=['GET'])
-def api_get_areas():
-    areas = list(areas_collection.find({}, {"nombre": 1, "oficinas": 1}))
-    for a in areas:
-        a["_id"] = str(a["_id"])
-    return jsonify(areas)
 
-@app.route('/api/areas', methods=['POST'])
-def api_create_area():
+class Oficina(db.Model):
+    __tablename__ = "oficinas"
+    id_oficina = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    codigo = db.Column(db.String(100), unique=True, nullable=False)
+    id_area = db.Column(db.Integer, db.ForeignKey("areas.id_area", ondelete="RESTRICT"), nullable=False)
+
+    empleados = db.relationship("Empleado", backref="oficina", cascade="all, delete", passive_deletes=True)
+
+    def to_dict(self):
+        return {"id": self.id_oficina, "codigo": self.codigo, "idArea": self.id_area}
+
+
+class Empleado(db.Model):
+    __tablename__ = "empleados"
+    id_empleado = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    identificacion = db.Column(db.String(50), nullable=False)
+    nombre = db.Column(db.String(100), nullable=False)
+    tipo = db.Column(db.String(50))
+    subtipo = db.Column(db.String(50))
+    id_area = db.Column(db.Integer, db.ForeignKey("areas.id_area", ondelete="RESTRICT"), nullable=False)
+    id_oficina = db.Column(db.Integer, db.ForeignKey("oficinas.id_oficina", ondelete="RESTRICT"), nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id_empleado,
+            "identificacion": self.identificacion,
+            "nombre": self.nombre,
+            "tipo": self.tipo,
+            "subtipo": self.subtipo,
+            "idArea": self.id_area,
+            "idOficina": self.id_oficina
+        }
+
+
+class Salon(db.Model):
+    __tablename__ = "salones"
+    id_salon = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    codigo = db.Column(db.String(100), unique=True, nullable=False)
+    id_area = db.Column(db.Integer, db.ForeignKey("areas.id_area", ondelete="RESTRICT"), nullable=False)
+
+    def to_dict(self):
+        return {"id": self.id_salon, "codigo": self.codigo, "idArea": self.id_area}
+
+
+# ==============================================
+# RUTAS HTML
+# ==============================================
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+@app.route("/areas")
+def areas():
+    # Obtén todas las áreas de la base de datos
+    all_areas = Area.query.all()
+    return render_template("areas.html", areas=all_areas)
+
+@app.route("/empleados")
+def empleados_page():
+    return render_template("empleados.html")
+
+@app.route("/oficinas")
+def oficinas_page():
+    return render_template("oficinas.html")
+
+@app.route("/salones")
+def salones_page():
+    return render_template("salones.html")
+
+
+# ==============================================
+# API AREAS
+# ==============================================
+@app.route("/api/areas", methods=["GET"])
+def get_areas():
+    areas = Area.query.all()
+    return jsonify([a.to_dict() for a in areas])
+
+@app.route("/areas/add", methods=["POST"])
+def add_area():
+    nombre = request.form["nombre"]
+    nueva_area = Area(nombre=nombre)
+    db.session.add(nueva_area)
+    db.session.commit()
+    return redirect("/areas")
+
+@app.route("/api/areas/<int:id>", methods=["PUT"])
+def update_area(id):
+    area = Area.query.get_or_404(id)
     data = request.json
-    if not data or "nombre" not in data:
-        return {"message": "Datos incompletos"}, 400
-    areas_collection.insert_one(data)
-    return {"message": "Área creada"}, 201
+    area.nombre = data.get("nombre", area.nombre)
+    db.session.commit()
+    return jsonify(area.to_dict())
 
-@app.route('/api/areas/<string:id>', methods=['PUT'])
-def api_update_area(id):
+@app.route("/api/areas/<int:id>", methods=["DELETE"])
+def delete_area(id):
+    area = Area.query.get_or_404(id)
+    db.session.delete(area)
+    db.session.commit()
+    return jsonify({"message": "Área eliminada"})
+
+
+# ==============================================
+# API OFICINAS
+# ==============================================
+@app.route("/api/oficinas", methods=["GET"])
+def get_oficinas():
+    oficinas = Oficina.query.all()
+    return jsonify([o.to_dict() for o in oficinas])
+
+@app.route("/api/oficinas", methods=["POST"])
+def add_oficina():
     data = request.json
-    result = areas_collection.update_one(
-        {"_id": ObjectId(id)},
-        {"$set": data}
+    nueva_oficina = Oficina(codigo=data["codigo"], id_area=data["idArea"])
+    db.session.add(nueva_oficina)
+    db.session.commit()
+    return jsonify(nueva_oficina.to_dict()), 201
+
+@app.route("/api/oficinas/<int:id>", methods=["PUT"])
+def update_oficina(id):
+    oficina = Oficina.query.get_or_404(id)
+    data = request.json
+    oficina.codigo = data.get("codigo", oficina.codigo)
+    oficina.id_area = data.get("idArea", oficina.id_area)
+    db.session.commit()
+    return jsonify(oficina.to_dict())
+
+@app.route("/api/oficinas/<int:id>", methods=["DELETE"])
+def delete_oficina(id):
+    oficina = Oficina.query.get_or_404(id)
+    db.session.delete(oficina)
+    db.session.commit()
+    return jsonify({"message": "Oficina eliminada"})
+
+
+# ==============================================
+# API EMPLEADOS
+# ==============================================
+@app.route("/api/empleados", methods=["GET"])
+def get_empleados():
+    empleados = Empleado.query.all()
+    return jsonify([e.to_dict() for e in empleados])
+
+@app.route("/api/empleados", methods=["POST"])
+def add_empleado():
+    data = request.json
+    nuevo_empleado = Empleado(
+        identificacion=data["identificacion"],
+        nombre=data["nombre"],
+        tipo=data.get("tipo"),
+        subtipo=data.get("subtipo"),
+        id_area=data["idArea"],
+        id_oficina=data["idOficina"]
     )
-    if result.modified_count > 0:
-        return {"message": "Área actualizada"}
-    return {"message": "Área no encontrada"}, 404
+    db.session.add(nuevo_empleado)
+    db.session.commit()
+    return jsonify(nuevo_empleado.to_dict()), 201
 
-@app.route('/api/areas/<string:id>', methods=['DELETE'])
-def api_delete_area(id):
-    result = areas_collection.delete_one({"_id": ObjectId(id)})
-    if result.deleted_count > 0:
-        return {"message": "Área eliminada"}
-    return {"message": "Área no encontrada"}, 404
-
-# ==============================
-#   API REST - EMPLEADOS (CRUD)
-# ==============================
-@app.route('/api/empleados', methods=['GET'])
-def api_get_empleados():
-    empleados = list(empleados_collection.find({}, {
-        "identificacion": 1, "nombre": 1, "tipo": 1,
-        "subtipo": 1, "idArea": 1, "idOficina": 1
-    }))
-    for e in empleados:
-        e["_id"] = str(e["_id"])
-    return jsonify(empleados)
-
-@app.route('/api/empleados', methods=['POST'])
-def api_create_empleado():
+@app.route("/api/empleados/<int:id>", methods=["PUT"])
+def update_empleado(id):
+    empleado = Empleado.query.get_or_404(id)
     data = request.json
-    if not data or "identificacion" not in data or "nombre" not in data:
-        return {"message": "Datos incompletos"}, 400
-    empleados_collection.insert_one(data)
-    return {"message": "Empleado creado"}, 201
+    empleado.identificacion = data.get("identificacion", empleado.identificacion)
+    empleado.nombre = data.get("nombre", empleado.nombre)
+    empleado.tipo = data.get("tipo", empleado.tipo)
+    empleado.subtipo = data.get("subtipo", empleado.subtipo)
+    empleado.id_area = data.get("idArea", empleado.id_area)
+    empleado.id_oficina = data.get("idOficina", empleado.id_oficina)
+    db.session.commit()
+    return jsonify(empleado.to_dict())
 
-@app.route('/api/empleados/<string:id>', methods=['PUT'])
-def api_update_empleado(id):
+@app.route("/api/empleados/<int:id>", methods=["DELETE"])
+def delete_empleado(id):
+    empleado = Empleado.query.get_or_404(id)
+    db.session.delete(empleado)
+    db.session.commit()
+    return jsonify({"message": "Empleado eliminado"})
+
+
+# ==============================================
+# API SALONES
+# ==============================================
+@app.route("/api/salones", methods=["GET"])
+def get_salones():
+    salones = Salon.query.all()
+    return jsonify([s.to_dict() for s in salones])
+
+@app.route("/api/salones", methods=["POST"])
+def add_salon():
     data = request.json
-    result = empleados_collection.update_one(
-        {"_id": ObjectId(id)},
-        {"$set": data}
-    )
-    if result.modified_count > 0:
-        return {"message": "Empleado actualizado"}
-    return {"message": "Empleado no encontrado"}, 404
+    nuevo_salon = Salon(codigo=data["codigo"], id_area=data["idArea"])
+    db.session.add(nuevo_salon)
+    db.session.commit()
+    return jsonify(nuevo_salon.to_dict()), 201
 
-@app.route('/api/empleados/<string:id>', methods=['DELETE'])
-def api_delete_empleado(id):
-    result = empleados_collection.delete_one({"_id": ObjectId(id)})
-    if result.deleted_count > 0:
-        return {"message": "Empleado eliminado"}
-    return {"message": "Empleado no encontrado"}, 404
-
-# ==============================
-#   API REST - OFICINAS (CRUD)
-# ==============================
-@app.route('/api/oficinas', methods=['GET'])
-def api_get_oficinas():
-    oficinas = list(oficinas_collection.find({}, {"codigo": 1, "idArea": 1, "empleados": 1}))
-    for o in oficinas:
-        o["_id"] = str(o["_id"])
-    return jsonify(oficinas)
-
-@app.route('/api/oficinas', methods=['POST'])
-def api_create_oficina():
+@app.route("/api/salones/<int:id>", methods=["PUT"])
+def update_salon(id):
+    salon = Salon.query.get_or_404(id)
     data = request.json
-    if not data or "codigo" not in data:
-        return {"message": "Datos incompletos"}, 400
-    oficinas_collection.insert_one(data)
-    return {"message": "Oficina creada"}, 201
+    salon.codigo = data.get("codigo", salon.codigo)
+    salon.id_area = data.get("idArea", salon.id_area)
+    db.session.commit()
+    return jsonify(salon.to_dict())
 
-@app.route('/api/oficinas/<string:id>', methods=['PUT'])
-def api_update_oficina(id):
-    data = request.json
-    result = oficinas_collection.update_one(
-        {"_id": ObjectId(id)},
-        {"$set": data}
-    )
-    if result.modified_count > 0:
-        return {"message": "Oficina actualizada"}
-    return {"message": "Oficina no encontrada"}, 404
+@app.route("/api/salones/<int:id>", methods=["DELETE"])
+def delete_salon(id):
+    salon = Salon.query.get_or_404(id)
+    db.session.delete(salon)
+    db.session.commit()
+    return jsonify({"message": "Salón eliminado"})
 
-@app.route('/api/oficinas/<string:id>', methods=['DELETE'])
-def api_delete_oficina(id):
-    result = oficinas_collection.delete_one({"_id": ObjectId(id)})
-    if result.deleted_count > 0:
-        return {"message": "Oficina eliminada"}
-    return {"message": "Oficina no encontrada"}, 404
 
-# ==============================
-#   API REST - SALONES (CRUD)
-# ==============================
-@app.route('/api/salones', methods=['GET'])
-def api_get_salones():
-    salones = list(salones_collection.find({}, {"codigo": 1, "idArea": 1}))
-    for s in salones:
-        s["_id"] = str(s["_id"])
-    return jsonify(salones)
-
-@app.route('/api/salones', methods=['POST'])
-def api_create_salon():
-    data = request.json
-    if not data or "codigo" not in data:
-        return {"message": "Datos incompletos"}, 400
-    salones_collection.insert_one(data)
-    return {"message": "Salón creado"}, 201
-
-@app.route('/api/salones/<string:id>', methods=['PUT'])
-def api_update_salon(id):
-    data = request.json
-    result = salones_collection.update_one(
-        {"_id": ObjectId(id)},
-        {"$set": data}
-    )
-    if result.modified_count > 0:
-        return {"message": "Salón actualizado"}
-    return {"message": "Salón no encontrado"}, 404
-
-@app.route('/api/salones/<string:id>', methods=['DELETE'])
-def api_delete_salon(id):
-    result = salones_collection.delete_one({"_id": ObjectId(id)})
-    if result.deleted_count > 0:
-        return {"message": "Salón eliminado"}
-    return {"message": "Salón no encontrado"}, 404
-
-# ==============================
-#   Run App
-# ==============================
-if __name__ == '__main__':
+# ==============================================
+# MAIN
+# ==============================================
+if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)
