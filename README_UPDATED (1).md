@@ -21,6 +21,15 @@ Construida con **Flask + SQLAlchemy + MySQL**, integrando un modelo **relacional
 
 ---
 
+## 📌 CRUD de Áreas – Reglas implementadas
+
+- 🚫 **Protección en eliminación**: no se puede borrar un área si tiene empleados, oficinas o salones asociados.  
+- 📏 **Validación de longitud**: los nombres deben tener entre 3 y 100 caracteres.  
+- 🔒 **Validación de unicidad**: no se permiten áreas duplicadas (insensible a mayúsculas/minúsculas).  
+- 🎨 **Mejoras visuales**: estilo uniforme con tarjetas y botones de acción, mensajes flash amigables como `Área agregada con éxito ✅`.  
+
+---
+
 ## 🛠️ Requisitos
 
 - Python 3.10+  
@@ -33,59 +42,43 @@ Construida con **Flask + SQLAlchemy + MySQL**, integrando un modelo **relacional
 
 1. **Clona este repositorio**:
 
-   ```bash
    git clone https://github.com/Drownfe/CRUD-CAMBRIDGE
    cd CRUD-CAMBRIDGE
-   ```
 
 2. **Crea y activa un entorno virtual**:
 
-   ```bash
    python -m venv venv
    # Linux/macOS
    source venv/bin/activate
    # Windows PowerShell
    venv\Scripts\activate
-   ```
 
 3. **Instala las dependencias**:
 
-   ```bash
    pip install -r requirements.txt
-   ```
 
    Si necesitas instalarlas manualmente:
 
-   ```bash
    pip install flask flask_sqlalchemy pymysql python-dotenv
-   ```
 
 4. **Configura la base de datos MySQL**:
 
    - Entra a la consola de MySQL:
 
-     ```bash
      mysql -u root -p
-     ```
 
    - Cambia la autenticación de root (si es necesario):
 
-     ```sql
      ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root1234';
      FLUSH PRIVILEGES;
-     ```
 
    - Crea la base de datos:
 
-     ```sql
      CREATE DATABASE colegio_cambridge;
-     ```
 
 5. **Configura el archivo `.env`** en la raíz del proyecto:
 
-   ```
    DB_URI=mysql+pymysql://root:root1234@localhost/colegio_cambridge
-   ```
 
 ---
 
@@ -93,28 +86,26 @@ Construida con **Flask + SQLAlchemy + MySQL**, integrando un modelo **relacional
 
 1. **Ejecuta la aplicación Flask**:
 
-   ```bash
    python app.py
-   ```
 
 2. Abre tu navegador en:  
-   - 🌐 [http://localhost:5000/areas](http://localhost:5000/areas) → Listado de Áreas  
-   - 👨‍🏫 [http://localhost:5000/empleados](http://localhost:5000/empleados) → Listado de Empleados  
-   - 🏢 [http://localhost:5000/oficinas](http://localhost:5000/oficinas) → Listado de Oficinas  
-   - 🏫 [http://localhost:5000/salones](http://localhost:5000/salones) → Listado de Salones  
+   - 🌐 http://localhost:5000/areas → Listado de Áreas  
+   - 👨‍🏫 http://localhost:5000/empleados → Listado de Empleados  
+   - 🏢 http://localhost:5000/oficinas → Listado de Oficinas  
+   - 🏫 http://localhost:5000/salones → Listado de Salones  
 
 3. También puedes probar los endpoints de la API REST:  
-   - `GET /api/areas`  
-   - `POST /api/areas`  
-   - `PUT /api/areas/<id>`  
-   - `DELETE /api/areas/<id>`  
+   - GET /api/areas  
+   - POST /api/areas  
+   - PUT /api/areas/<id>  
+   - DELETE /api/areas/<id>  
 
 ---
 
 ## 🚧 Estado del proyecto
 
 ✅ Migración completa de **MongoDB a MySQL relacional**.  
-✅ CRUD de **Áreas** operativo.  
+✅ CRUD de **Áreas** finalizado con validaciones y reglas de negocio.  
 ✅ CRUD de **Empleados, Oficinas y Salones** en desarrollo.  
 ⏳ Pendiente agregar autenticación y validaciones extra.  
 
@@ -123,4 +114,4 @@ Construida con **Flask + SQLAlchemy + MySQL**, integrando un modelo **relacional
 ## 📬 Contacto
 
 👤 Desarrollado por **Juan Hernández**  
-📧 Para dudas, sugerencias o colaboración → [Abrir un issue en GitHub](https://github.com/Drownfe/CRUD-CAMBRIDGE/issues)  
+📧 Para dudas, sugerencias o colaboración → https://github.com/Drownfe/CRUD-CAMBRIDGE/issues
