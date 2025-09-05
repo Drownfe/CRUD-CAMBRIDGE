@@ -1,7 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import os
-from flask import Flask, render_template, request, jsonify, redirect, flash
+from flask import Flask, render_template, request, jsonify, redirect
 from sqlalchemy.exc import IntegrityError
 
 # ==============================================
@@ -21,7 +21,6 @@ CORS(app)
 # CONFIGURACIÓN DE MYSQL
 # ==============================================
 
-app.secret_key = "flash1234"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:root1234@localhost/colegio_cambridge'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -94,44 +93,17 @@ def areas():
     all_areas = Area.query.order_by(Area.id_area.asc()).all()
     return render_template("Areas/areas.html", areas=all_areas)
 
-@app.route("/areas/edit/<int:id>", methods=["GET", "POST"])
-def edit_area(id):
-    area = Area.query.get_or_404(id)
-    if request.method == "POST":
-        nuevo_nombre = request.form["nombre"].strip().title()
-
-        # Validación de longitud
-        if len(nuevo_nombre) < 3 or len(nuevo_nombre) > 100:
-            flash("⚠️ El nombre del área debe tener entre 3 y 100 caracteres.", "warning")
-            return redirect(f"/areas/edit/{id}")
-
-        # Validación de unicidad (ignora el área actual)
-        existente = Area.query.filter(
-            Area.nombre.ilike(nuevo_nombre),
-            Area.id_area != id
-        ).first()
-        if existente:
-            flash("⚠️ Ya existe otra área con ese nombre.", "danger")
-            return redirect(f"/areas/edit/{id}")
-
-        area.nombre = nuevo_nombre
-        db.session.commit()
-        flash("Área actualizada con éxito ✅", "success")
-        return redirect("/areas")
-
-    return render_template("Areas/edit_areas.html", area=area)
-
 @app.route("/empleados")
 def empleados_page():
-    return render_template("empleados.html")
+    return render_template("Empleados/empleados.html")
 
 @app.route("/oficinas")
 def oficinas_page():
-    return render_template("oficinas.html")
+    return render_template("Oficinas/oficinas.html")
 
 @app.route("/salones")
 def salones_page():
-    return render_template("salones.html")
+    return render_template("Salones/salones.html")
 
 # ==============================================
 # API AREAS
@@ -142,46 +114,91 @@ def get_areas():
     areas = Area.query.all()
     return jsonify([a.to_dict() for a in areas])
 
-@app.route("/areas/add", methods=["POST"])
+# Crear Área
+@app.route("/api/areas", methods=["POST"])
 def add_area():
-    nombre = request.form["nombre"].strip().title()
+    data = request.json
+    nombre = data.get("nombre", "").strip().title()
 
     # Validación de longitud
     if len(nombre) < 3 or len(nombre) > 100:
-        flash("⚠️ El nombre del área debe tener entre 3 y 100 caracteres.", "warning")
-        return redirect("/areas")
+        return jsonify({
+            "status": "error",
+            "message": "⚠️ El nombre del área debe tener entre 3 y 100 caracteres."
+        }), 400
 
     # Validación de unicidad
     existente = Area.query.filter(Area.nombre.ilike(nombre)).first()
     if existente:
-        flash("⚠️ El área ya existe, ingresa un nombre diferente.", "danger")
-        return redirect("/areas")
+        return jsonify({
+            "status": "error",
+            "message": "⚠️ El área ya existe, ingresa un nombre diferente."
+        }), 400
 
     nueva_area = Area(nombre=nombre)
     db.session.add(nueva_area)
     db.session.commit()
-    flash("Área agregada con éxito ✅", "success")
-    return redirect("/areas")
 
+    return jsonify({
+        "status": "ok",
+        "message": "Área agregada con éxito ✅",
+        "area": nueva_area.to_dict()
+    }), 201
+
+
+# Actualizar Área
 @app.route("/api/areas/<int:id>", methods=["PUT"])
 def update_area(id):
     area = Area.query.get_or_404(id)
     data = request.json
-    area.nombre = data.get("nombre", area.nombre)
-    db.session.commit()
-    return jsonify(area.to_dict())
+    nuevo_nombre = data.get("nombre", "").strip().title()
 
-@app.route("/areas/delete/<int:id>")
+    # Validación de longitud
+    if len(nuevo_nombre) < 3 or len(nuevo_nombre) > 100:
+        return jsonify({
+            "status": "error",
+            "message": "⚠️ El nombre del área debe tener entre 3 y 100 caracteres."
+        }), 400
+
+    # Validación de unicidad (ignorando el mismo área)
+    existente = Area.query.filter(
+        Area.nombre.ilike(nuevo_nombre),
+        Area.id_area != id
+    ).first()
+    if existente:
+        return jsonify({
+            "status": "error",
+            "message": "⚠️ Ya existe otra área con ese nombre."
+        }), 400
+
+    area.nombre = nuevo_nombre
+    db.session.commit()
+
+    return jsonify({
+        "status": "ok",
+        "message": "Área actualizada con éxito ✅",
+        "area": area.to_dict()
+    })
+
+
+# Eliminar Área
+@app.route("/api/areas/<int:id>", methods=["DELETE"])
 def delete_area(id):
     area = Area.query.get_or_404(id)
     try:
         db.session.delete(area)
         db.session.commit()
-        flash("Área eliminada con éxito 🗑️", "success")
+        return jsonify({
+            "status": "ok",
+            "message": "Área eliminada con éxito 🗑️"
+        })
     except IntegrityError:
-        db.session.rollback()  # Deshace la transacción
-        flash("⚠️ No se puede eliminar el área porque tiene oficinas, empleados o salones asociados.", "danger")
-    return redirect("/areas")
+        db.session.rollback()
+        return jsonify({
+            "status": "error",
+            "message": "⚠️ No se puede eliminar el área porque tiene oficinas, empleados o salones asociados."
+        }), 400
+
 
 # ==============================================
 # API OFICINAS
@@ -258,6 +275,25 @@ def delete_empleado(id):
     db.session.delete(empleado)
     db.session.commit()
     return jsonify({"message": "Empleado eliminado"})
+
+@app.route("/empleados/edit/<int:id>", methods=["GET", "POST"])
+def edit_empleado(id):
+    empleado = Empleado.query.get_or_404(id)
+
+    if request.method == "POST":
+        empleado.identificacion = request.form["identificacion"].strip()
+        empleado.nombre = request.form["nombre"].strip().title()
+        empleado.tipo = request.form.get("tipo")
+        empleado.subtipo = request.form.get("subtipo")
+        empleado.id_area = request.form.get("id_area")
+        empleado.id_oficina = request.form.get("id_oficina")
+
+        db.session.commit()
+        flash("Empleado actualizado con éxito ✅", "success")
+        return redirect("/empleados")
+
+    return render_template("Empleados/edit_empleados.html", empleado=empleado)
+
 
 
 # ==============================================

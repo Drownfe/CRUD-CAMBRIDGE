@@ -1,0 +1,96 @@
+/* =======================
+   ÁREAS DEL COLEGIO
+   Ajustes finales de armonía
+======================= */
+
+/* Fondo general */
+body {
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%) !important;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #1e293b; /* gris azulado oscuro para textos */
+    font-size: 16px;
+    line-height: 1.5;
+    min-height: 100vh;
+}
+
+/* Título */
+h1 {
+    font-weight: 700;
+    color: #ffffff; /* título blanco para contrastar */
+    text-align: center;
+    margin-bottom: 30px;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.3); /* sombra suave */
+}
+h1::after {
+    background: #93c5fd; /* línea azul clara */
+}
+
+/* Tarjetas */
+.custom-card {
+    background: #f9fafb; /* gris muy claro */
+    border: 1px solid #dbeafe; /* borde azul pálido */
+    border-radius: 10px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.custom-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0px 4px 12px rgba(37, 99, 235, 0.25); /* sombra azul */
+}
+.custom-card .card-header {
+    background: #f1f5f9;
+    color: #1e3a8a; /* azul fuerte */
+    font-weight: 600;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 10px 15px;
+}
+
+/* Texto dentro de tarjetas */
+.custom-card span {
+    font-size: 0.95rem;
+}
+
+/* Botones */
+.btn {
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+}
+
+/* Botón Editar */
+.btn-warning {
+    background-color: #fbbf24; /* amarillo dorado */
+    color: #1e293b; /* texto oscuro */
+    border: none;
+}
+.btn-warning:hover {
+    background-color: #f59e0b;
+}
+
+/* Botón Eliminar */
+.btn-danger {
+    background-color: #ef4444; /* rojo suave */
+    border: none;
+}
+.btn-danger:hover {
+    background-color: #dc2626;
+}
+
+/* Botón Agregar */
+.btn-success {
+    background-color: #16a34a;
+    border: none;
+}
+.btn-success:hover {
+    background-color: #15803d;
+}
+
+/* Botón Volver */
+.btn-secondary {
+    background-color: #334155; /* gris azulado */
+    color: #f8fafc;
+    border: none;
+}
+.btn-secondary:hover {
+    background-color: #1e293b;
+}
