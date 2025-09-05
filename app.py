@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import os
+from flask import Flask, render_template, request, jsonify, redirect, flash
+from sqlalchemy.exc import IntegrityError
 
 # ==============================================
 # CONFIGURACIÓN DE FLASK
@@ -19,6 +20,8 @@ CORS(app)
 # ==============================================
 # CONFIGURACIÓN DE MYSQL
 # ==============================================
+
+app.secret_key = "flash1234"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:root1234@localhost/colegio_cambridge'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -27,6 +30,7 @@ db = SQLAlchemy(app)
 # ==============================================
 # MODELOS (Tablas)
 # ==============================================
+
 class Area(db.Model):
     __tablename__ = "areas"
     id_area = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -38,8 +42,6 @@ class Area(db.Model):
 
     def to_dict(self):
         return {"id": self.id_area, "nombre": self.nombre}
-
-
 class Oficina(db.Model):
     __tablename__ = "oficinas"
     id_oficina = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -50,8 +52,6 @@ class Oficina(db.Model):
 
     def to_dict(self):
         return {"id": self.id_oficina, "codigo": self.codigo, "idArea": self.id_area}
-
-
 class Empleado(db.Model):
     __tablename__ = "empleados"
     id_empleado = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -72,8 +72,6 @@ class Empleado(db.Model):
             "idArea": self.id_area,
             "idOficina": self.id_oficina
         }
-
-
 class Salon(db.Model):
     __tablename__ = "salones"
     id_salon = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -83,19 +81,45 @@ class Salon(db.Model):
     def to_dict(self):
         return {"id": self.id_salon, "codigo": self.codigo, "idArea": self.id_area}
 
-
 # ==============================================
 # RUTAS HTML
 # ==============================================
+
 @app.route("/")
 def index():
     return render_template("index.html")
 
 @app.route("/areas")
 def areas():
-    # Obtén todas las áreas de la base de datos
-    all_areas = Area.query.all()
-    return render_template("areas.html", areas=all_areas)
+    all_areas = Area.query.order_by(Area.id_area.asc()).all()
+    return render_template("Areas/areas.html", areas=all_areas)
+
+@app.route("/areas/edit/<int:id>", methods=["GET", "POST"])
+def edit_area(id):
+    area = Area.query.get_or_404(id)
+    if request.method == "POST":
+        nuevo_nombre = request.form["nombre"].strip().title()
+
+        # Validación de longitud
+        if len(nuevo_nombre) < 3 or len(nuevo_nombre) > 100:
+            flash("⚠️ El nombre del área debe tener entre 3 y 100 caracteres.", "warning")
+            return redirect(f"/areas/edit/{id}")
+
+        # Validación de unicidad (ignora el área actual)
+        existente = Area.query.filter(
+            Area.nombre.ilike(nuevo_nombre),
+            Area.id_area != id
+        ).first()
+        if existente:
+            flash("⚠️ Ya existe otra área con ese nombre.", "danger")
+            return redirect(f"/areas/edit/{id}")
+
+        area.nombre = nuevo_nombre
+        db.session.commit()
+        flash("Área actualizada con éxito ✅", "success")
+        return redirect("/areas")
+
+    return render_template("Areas/edit_areas.html", area=area)
 
 @app.route("/empleados")
 def empleados_page():
@@ -109,10 +133,10 @@ def oficinas_page():
 def salones_page():
     return render_template("salones.html")
 
-
 # ==============================================
 # API AREAS
 # ==============================================
+
 @app.route("/api/areas", methods=["GET"])
 def get_areas():
     areas = Area.query.all()
@@ -120,10 +144,23 @@ def get_areas():
 
 @app.route("/areas/add", methods=["POST"])
 def add_area():
-    nombre = request.form["nombre"]
+    nombre = request.form["nombre"].strip().title()
+
+    # Validación de longitud
+    if len(nombre) < 3 or len(nombre) > 100:
+        flash("⚠️ El nombre del área debe tener entre 3 y 100 caracteres.", "warning")
+        return redirect("/areas")
+
+    # Validación de unicidad
+    existente = Area.query.filter(Area.nombre.ilike(nombre)).first()
+    if existente:
+        flash("⚠️ El área ya existe, ingresa un nombre diferente.", "danger")
+        return redirect("/areas")
+
     nueva_area = Area(nombre=nombre)
     db.session.add(nueva_area)
     db.session.commit()
+    flash("Área agregada con éxito ✅", "success")
     return redirect("/areas")
 
 @app.route("/api/areas/<int:id>", methods=["PUT"])
@@ -134,17 +171,22 @@ def update_area(id):
     db.session.commit()
     return jsonify(area.to_dict())
 
-@app.route("/api/areas/<int:id>", methods=["DELETE"])
+@app.route("/areas/delete/<int:id>")
 def delete_area(id):
     area = Area.query.get_or_404(id)
-    db.session.delete(area)
-    db.session.commit()
-    return jsonify({"message": "Área eliminada"})
-
+    try:
+        db.session.delete(area)
+        db.session.commit()
+        flash("Área eliminada con éxito 🗑️", "success")
+    except IntegrityError:
+        db.session.rollback()  # Deshace la transacción
+        flash("⚠️ No se puede eliminar el área porque tiene oficinas, empleados o salones asociados.", "danger")
+    return redirect("/areas")
 
 # ==============================================
 # API OFICINAS
 # ==============================================
+
 @app.route("/api/oficinas", methods=["GET"])
 def get_oficinas():
     oficinas = Oficina.query.all()
@@ -173,7 +215,6 @@ def delete_oficina(id):
     db.session.delete(oficina)
     db.session.commit()
     return jsonify({"message": "Oficina eliminada"})
-
 
 # ==============================================
 # API EMPLEADOS
