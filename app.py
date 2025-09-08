@@ -199,6 +199,159 @@ def delete_area(id):
             "message": "⚠️ No se puede eliminar el área porque tiene oficinas, empleados o salones asociados."
         }), 400
 
+# ==========================
+# API EMPLEADOS
+# ==========================
+
+@app.route("/api/empleados", methods=["GET"])
+def get_empleados():
+    empleados = Empleado.query.all()
+    return jsonify([e.to_dict() for e in empleados])
+
+
+@app.route("/api/empleados", methods=["POST"])
+def add_empleado():
+    data = request.json
+
+    identificacion = data.get("identificacion", "").strip()
+    nombre = data.get("nombre", "").strip().title()
+    tipo = data.get("tipo", "").strip()
+    subtipo = data.get("subtipo", "").strip()
+    id_area = data.get("idArea")
+    id_oficina = data.get("idOficina")
+
+    # Validación: identificación obligatoria y única
+    if not identificacion:
+        return jsonify({
+            "status": "error",
+            "message": "⚠️ La identificación es obligatoria."
+        }), 400
+
+    existente = Empleado.query.filter_by(identificacion=identificacion).first()
+    if existente:
+        return jsonify({
+            "status": "error",
+            "message": "⚠️ Ya existe un empleado con esa identificación."
+        }), 400
+
+    # Validación: nombre con longitud mínima
+    if len(nombre) < 3:
+        return jsonify({
+            "status": "error",
+            "message": "⚠️ El nombre del empleado debe tener al menos 3 caracteres."
+        }), 400
+
+    # Validación: área y oficina deben existir
+    if not Area.query.get(id_area):
+        return jsonify({
+            "status": "error",
+            "message": "⚠️ El área seleccionada no existe."
+        }), 400
+
+    if not Oficina.query.get(id_oficina):
+        return jsonify({
+            "status": "error",
+            "message": "⚠️ La oficina seleccionada no existe."
+        }), 400
+
+    nuevo_empleado = Empleado(
+        identificacion=identificacion,
+        nombre=nombre,
+        tipo=tipo,
+        subtipo=subtipo,
+        id_area=id_area,
+        id_oficina=id_oficina
+    )
+
+    db.session.add(nuevo_empleado)
+    db.session.commit()
+
+    return jsonify({
+        "status": "ok",
+        "message": "Empleado agregado con éxito ✅",
+        "empleado": nuevo_empleado.to_dict()
+    }), 201
+
+
+@app.route("/api/empleados/<int:id>", methods=["PUT"])
+def update_empleado(id):
+    empleado = Empleado.query.get_or_404(id)
+    data = request.json
+
+    identificacion = data.get("identificacion", "").strip()
+    nombre = data.get("nombre", "").strip().title()
+    tipo = data.get("tipo", "").strip()
+    subtipo = data.get("subtipo", "").strip()
+    id_area = data.get("idArea")
+    id_oficina = data.get("idOficina")
+
+    # Validar identificación única (ignorando el propio empleado)
+    if identificacion:
+        existente = Empleado.query.filter(
+            Empleado.identificacion == identificacion,
+            Empleado.id_empleado != id
+        ).first()
+        if existente:
+            return jsonify({
+                "status": "error",
+                "message": "⚠️ Otro empleado ya tiene esa identificación."
+            }), 400
+        empleado.identificacion = identificacion
+
+    # Validar nombre
+    if len(nombre) < 3:
+        return jsonify({
+            "status": "error",
+            "message": "⚠️ El nombre debe tener al menos 3 caracteres."
+        }), 400
+
+    empleado.nombre = nombre
+    empleado.tipo = tipo
+    empleado.subtipo = subtipo
+
+    # Validar área y oficina si cambiaron
+    if id_area and not Area.query.get(id_area):
+        return jsonify({
+            "status": "error",
+            "message": "⚠️ El área seleccionada no existe."
+        }), 400
+    if id_oficina and not Oficina.query.get(id_oficina):
+        return jsonify({
+            "status": "error",
+            "message": "⚠️ La oficina seleccionada no existe."
+        }), 400
+
+    if id_area:
+        empleado.id_area = id_area
+    if id_oficina:
+        empleado.id_oficina = id_oficina
+
+    db.session.commit()
+
+    return jsonify({
+        "status": "ok",
+        "message": "Empleado actualizado con éxito ✅",
+        "empleado": empleado.to_dict()
+    })
+
+
+@app.route("/api/empleados/<int:id>", methods=["DELETE"])
+def delete_empleado(id):
+    empleado = Empleado.query.get_or_404(id)
+    try:
+        db.session.delete(empleado)
+        db.session.commit()
+        return jsonify({
+            "status": "ok",
+            "message": "Empleado eliminado con éxito 🗑️"
+        })
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({
+            "status": "error",
+            "message": "⚠️ No se puede eliminar el empleado porque tiene datos asociados."
+        }), 400
+
 
 # ==============================================
 # API OFICINAS
@@ -232,69 +385,6 @@ def delete_oficina(id):
     db.session.delete(oficina)
     db.session.commit()
     return jsonify({"message": "Oficina eliminada"})
-
-# ==============================================
-# API EMPLEADOS
-# ==============================================
-@app.route("/api/empleados", methods=["GET"])
-def get_empleados():
-    empleados = Empleado.query.all()
-    return jsonify([e.to_dict() for e in empleados])
-
-@app.route("/api/empleados", methods=["POST"])
-def add_empleado():
-    data = request.json
-    nuevo_empleado = Empleado(
-        identificacion=data["identificacion"],
-        nombre=data["nombre"],
-        tipo=data.get("tipo"),
-        subtipo=data.get("subtipo"),
-        id_area=data["idArea"],
-        id_oficina=data["idOficina"]
-    )
-    db.session.add(nuevo_empleado)
-    db.session.commit()
-    return jsonify(nuevo_empleado.to_dict()), 201
-
-@app.route("/api/empleados/<int:id>", methods=["PUT"])
-def update_empleado(id):
-    empleado = Empleado.query.get_or_404(id)
-    data = request.json
-    empleado.identificacion = data.get("identificacion", empleado.identificacion)
-    empleado.nombre = data.get("nombre", empleado.nombre)
-    empleado.tipo = data.get("tipo", empleado.tipo)
-    empleado.subtipo = data.get("subtipo", empleado.subtipo)
-    empleado.id_area = data.get("idArea", empleado.id_area)
-    empleado.id_oficina = data.get("idOficina", empleado.id_oficina)
-    db.session.commit()
-    return jsonify(empleado.to_dict())
-
-@app.route("/api/empleados/<int:id>", methods=["DELETE"])
-def delete_empleado(id):
-    empleado = Empleado.query.get_or_404(id)
-    db.session.delete(empleado)
-    db.session.commit()
-    return jsonify({"message": "Empleado eliminado"})
-
-@app.route("/empleados/edit/<int:id>", methods=["GET", "POST"])
-def edit_empleado(id):
-    empleado = Empleado.query.get_or_404(id)
-
-    if request.method == "POST":
-        empleado.identificacion = request.form["identificacion"].strip()
-        empleado.nombre = request.form["nombre"].strip().title()
-        empleado.tipo = request.form.get("tipo")
-        empleado.subtipo = request.form.get("subtipo")
-        empleado.id_area = request.form.get("id_area")
-        empleado.id_oficina = request.form.get("id_oficina")
-
-        db.session.commit()
-        flash("Empleado actualizado con éxito ✅", "success")
-        return redirect("/empleados")
-
-    return render_template("Empleados/edit_empleados.html", empleado=empleado)
-
-
 
 # ==============================================
 # API SALONES
