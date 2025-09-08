@@ -50,7 +50,12 @@ class Oficina(db.Model):
     empleados = db.relationship("Empleado", backref="oficina", cascade="all, delete", passive_deletes=True)
 
     def to_dict(self):
-        return {"id": self.id_oficina, "codigo": self.codigo, "idArea": self.id_area}
+        return {
+            "id": self.id_oficina,
+            "codigo": self.codigo,
+            "idArea": self.id_area,
+            "areaNombre": self.area.nombre if self.area else None
+        }
 class Empleado(db.Model):
     __tablename__ = "empleados"
     id_empleado = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -353,38 +358,116 @@ def delete_empleado(id):
         }), 400
 
 
-# ==============================================
+# ==========================
 # API OFICINAS
-# ==============================================
+# ==========================
 
 @app.route("/api/oficinas", methods=["GET"])
 def get_oficinas():
     oficinas = Oficina.query.all()
     return jsonify([o.to_dict() for o in oficinas])
 
+
 @app.route("/api/oficinas", methods=["POST"])
 def add_oficina():
     data = request.json
-    nueva_oficina = Oficina(codigo=data["codigo"], id_area=data["idArea"])
+    codigo = data.get("codigo", "").strip().title()
+    id_area = data.get("idArea")
+
+    # Validación: código obligatorio y longitud
+    if len(codigo) < 2 or len(codigo) > 100:
+        return jsonify({
+            "status": "error",
+            "message": "⚠️ El código de la oficina debe tener entre 2 y 100 caracteres."
+        }), 400
+
+    # Validación: unicidad de código
+    existente = Oficina.query.filter_by(codigo=codigo).first()
+    if existente:
+        return jsonify({
+            "status": "error",
+            "message": "⚠️ Ya existe una oficina con ese código."
+        }), 400
+
+    # Validación: el área debe existir
+    if not Area.query.get(id_area):
+        return jsonify({
+            "status": "error",
+            "message": "⚠️ El área seleccionada no existe."
+        }), 400
+
+    nueva_oficina = Oficina(codigo=codigo, id_area=id_area)
     db.session.add(nueva_oficina)
     db.session.commit()
-    return jsonify(nueva_oficina.to_dict()), 201
+
+    return jsonify({
+        "status": "ok",
+        "message": "Oficina agregada con éxito ✅",
+        "oficina": nueva_oficina.to_dict()
+    }), 201
+
 
 @app.route("/api/oficinas/<int:id>", methods=["PUT"])
 def update_oficina(id):
     oficina = Oficina.query.get_or_404(id)
     data = request.json
-    oficina.codigo = data.get("codigo", oficina.codigo)
-    oficina.id_area = data.get("idArea", oficina.id_area)
+
+    codigo = data.get("codigo", "").strip().title()
+    id_area = data.get("idArea")
+
+    # Validación: longitud
+    if len(codigo) < 2 or len(codigo) > 100:
+        return jsonify({
+            "status": "error",
+            "message": "⚠️ El código de la oficina debe tener entre 2 y 100 caracteres."
+        }), 400
+
+    # Validación: unicidad (ignora la misma oficina)
+    existente = Oficina.query.filter(
+        Oficina.codigo.ilike(codigo),
+        Oficina.id_oficina != id
+    ).first()
+    if existente:
+        return jsonify({
+            "status": "error",
+            "message": "⚠️ Ya existe otra oficina con ese código."
+        }), 400
+
+    # Validación: área existente
+    if id_area and not Area.query.get(id_area):
+        return jsonify({
+            "status": "error",
+            "message": "⚠️ El área seleccionada no existe."
+        }), 400
+
+    oficina.codigo = codigo
+    oficina.id_area = id_area if id_area else oficina.id_area
     db.session.commit()
-    return jsonify(oficina.to_dict())
+
+    return jsonify({
+        "status": "ok",
+        "message": "Oficina actualizada con éxito ✅",
+        "oficina": oficina.to_dict()
+    })
+
 
 @app.route("/api/oficinas/<int:id>", methods=["DELETE"])
 def delete_oficina(id):
     oficina = Oficina.query.get_or_404(id)
-    db.session.delete(oficina)
-    db.session.commit()
-    return jsonify({"message": "Oficina eliminada"})
+    try:
+        db.session.delete(oficina)
+        db.session.commit()
+        return jsonify({
+            "status": "ok",
+            "message": "Oficina eliminada con éxito 🗑️"
+        })
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({
+            "status": "error",
+            "message": "⚠️ No se puede eliminar la oficina porque tiene empleados asociados."
+        }), 400
+
 
 # ==============================================
 # API SALONES

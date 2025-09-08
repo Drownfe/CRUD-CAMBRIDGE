@@ -1,0 +1,77 @@
+/* =======================
+   OFICINAS DEL COLEGIO
+   Estilo académico sobrio
+======================= */
+
+/* Fondo general */
+body {
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #3b82f6 100%) !important;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #1e293b;
+    min-height: 100vh;
+}
+
+/* Título */
+h1 {
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+}
+
+/* Tarjeta formulario */
+.form-card {
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid #dbeafe;
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.08);
+}
+
+/* Inputs */
+.form-control,
+.form-select {
+    border-radius: 6px;
+}
+.form-control:focus,
+.form-select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 5px rgba(37, 99, 235, 0.3);
+}
+
+/* Botones */
+.btn-success { background-color: #16a34a; border: none; }
+.btn-success:hover { background-color: #15803d; }
+
+.btn-primary { background-color: #2563eb; border: none; }
+.btn-primary:hover { background-color: #1d4ed8; }
+
+.btn-warning { background-color: #fbbf24; border: none; color: #1e293b; }
+.btn-warning:hover { background-color: #f59e0b; }
+
+.btn-danger { background-color: #ef4444; border: none; }
+.btn-danger:hover { background-color: #dc2626; }
+
+.btn-secondary { background-color: #334155; border: none; color: #f8fafc; }
+.btn-secondary:hover { background-color: #1e293b; }
+
+/* Tarjetas de oficinas */
+.custom-card {
+    border: 1px solid #dbeafe;
+    border-radius: 10px;
+    background: #f9fafb;
+    margin-bottom: 20px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.custom-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0px 6px 16px rgba(37, 99, 235, 0.25);
+}
+.custom-card .card-header {
+    background: #f1f5f9;
+    color: #1e3a8a;
+    font-weight: 600;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
