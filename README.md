@@ -1,7 +1,7 @@
 # 🎓 CRUD CAMBRIDGE - Proyecto Colegio 🚀
 
 Aplicación web para la **gestión de Áreas, Empleados, Oficinas y Salones** del Colegio Cambridge.  
-Construida con **Flask + SQLAlchemy + MySQL**, integrando un modelo **relacional** con rutas CRUD completas y frontend en **HTML + Bootstrap + CSS**.
+Construida con **Flask + SQLAlchemy + MySQL**, integrando un modelo **relacional** con rutas CRUD completas, frontend en **HTML + Bootstrap + CSS + JavaScript**, y estructura modular con **Blueprints**.
 
 > ⚠️ Proyecto en construcción 🚧 — se siguen agregando módulos y funcionalidades.
 
@@ -15,18 +15,26 @@ Construida con **Flask + SQLAlchemy + MySQL**, integrando un modelo **relacional
   - `empleados`  
   - `oficinas`  
   - `salones`  
-- 🔗 **API REST** con rutas `GET`, `POST`, `PUT`, `DELETE`.  
-- 🎨 **Frontend responsivo** con Bootstrap y estilos propios en `static/css/styles.css`.  
-- 🔐 Modelo relacional con claves foráneas para asegurar integridad.  
-
----
-
-## 📌 CRUD de Áreas – Reglas implementadas
-
-- 🚫 **Protección en eliminación**: no se puede borrar un área si tiene empleados, oficinas o salones asociados.  
-- 📏 **Validación de longitud**: los nombres deben tener entre 3 y 100 caracteres.  
-- 🔒 **Validación de unicidad**: no se permiten áreas duplicadas (insensible a mayúsculas/minúsculas).  
-- 🎨 **Mejoras visuales**: estilo uniforme con tarjetas y botones de acción, mensajes flash amigables como `Área agregada con éxito ✅`.  
+- 🔗 **API REST** modularizada con `Blueprints` y rutas `/api/...`.  
+- 🎨 **Frontend responsivo** con Bootstrap, CSS propios y JS dinámico por módulo.  
+- 🛡️ **Reglas implementadas**:  
+  - Áreas:  
+    - No se pueden duplicar nombres.  
+    - Nombre entre 3 y 100 caracteres.  
+    - No se pueden eliminar si tienen oficinas, empleados o salones asociados.  
+  - Empleados:  
+    - Identificación obligatoria y única.  
+    - Nombre mínimo 3 caracteres.  
+    - Deben estar vinculados a un área y a una oficina existente.  
+  - Oficinas:  
+    - Código obligatorio y único.  
+    - Longitud entre 2 y 100 caracteres.  
+    - Deben pertenecer a un área existente.  
+    - No se pueden eliminar si tienen empleados asociados.  
+  - Salones:  
+    - Código obligatorio y único.  
+    - Longitud entre 2 y 50 caracteres.  
+    - Deben pertenecer a un área existente.  
 
 ---
 
@@ -42,43 +50,53 @@ Construida con **Flask + SQLAlchemy + MySQL**, integrando un modelo **relacional
 
 1. **Clona este repositorio**:
 
+   ```bash
    git clone https://github.com/Drownfe/CRUD-CAMBRIDGE
    cd CRUD-CAMBRIDGE
+   ```
 
 2. **Crea y activa un entorno virtual**:
 
+   ```bash
    python -m venv venv
    # Linux/macOS
    source venv/bin/activate
    # Windows PowerShell
    venv\Scripts\activate
+   ```
 
 3. **Instala las dependencias**:
 
+   ```bash
    pip install -r requirements.txt
+   ```
 
-   Si necesitas instalarlas manualmente:
-
-   pip install flask flask_sqlalchemy pymysql python-dotenv
+   Dependencias principales:
+   - Flask  
+   - Flask-SQLAlchemy  
+   - Flask-CORS  
+   - PyMySQL  
+   - python-dotenv  
 
 4. **Configura la base de datos MySQL**:
 
    - Entra a la consola de MySQL:
 
+     ```bash
      mysql -u root -p
-
-   - Cambia la autenticación de root (si es necesario):
-
-     ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root1234';
-     FLUSH PRIVILEGES;
+     ```
 
    - Crea la base de datos:
 
+     ```sql
      CREATE DATABASE colegio_cambridge;
+     ```
 
 5. **Configura el archivo `.env`** en la raíz del proyecto:
 
+   ```
    DB_URI=mysql+pymysql://root:root1234@localhost/colegio_cambridge
+   ```
 
 ---
 
@@ -86,32 +104,78 @@ Construida con **Flask + SQLAlchemy + MySQL**, integrando un modelo **relacional
 
 1. **Ejecuta la aplicación Flask**:
 
+   ```bash
    python app.py
+   ```
 
 2. Abre tu navegador en:  
-   - 🌐 http://localhost:5000/areas → Listado de Áreas  
-   - 👨‍🏫 http://localhost:5000/empleados → Listado de Empleados  
-   - 🏢 http://localhost:5000/oficinas → Listado de Oficinas  
-   - 🏫 http://localhost:5000/salones → Listado de Salones  
+   - 🌐 [http://localhost:5000/areas](http://localhost:5000/areas) → Áreas del Colegio  
+   - 👨‍🏫 [http://localhost:5000/empleados](http://localhost:5000/empleados) → Empleados  
+   - 🏢 [http://localhost:5000/oficinas](http://localhost:5000/oficinas) → Oficinas  
+   - 🏫 [http://localhost:5000/salones](http://localhost:5000/salones) → Salones  
 
-3. También puedes probar los endpoints de la API REST:  
-   - GET /api/areas  
-   - POST /api/areas  
-   - PUT /api/areas/<id>  
-   - DELETE /api/areas/<id>  
+---
+
+## 📂 Estructura del proyecto
+
+```
+PDYP_CAMBRIDGE/
+│── app.py
+│── config.py
+│── models.py
+│── .env
+│── requirements.txt
+│
+├── routes/
+│   ├── areas.py
+│   ├── empleados.py
+│   ├── oficinas.py
+│   ├── salones.py
+│   └── views.py
+│
+├── templates/
+│   ├── index.html
+│   │
+│   ├── Areas/
+│   │   └── areas.html
+│   │
+│   ├── Empleados/
+│   │   └── empleados.html
+│   │
+│   ├── Oficinas/
+│   │   └── oficinas.html
+│   │
+│   └── Salones/
+│       └── salones.html
+│
+├── static/
+│   ├── css/
+│   │   ├── areas.css
+│   │   ├── empleados.css
+│   │   ├── oficinas.css
+│   │   └── salones.css
+│   │
+│   └── js/
+│       ├── areas.js
+│       ├── empleados.js
+│       ├── oficinas.js
+│       └── salones.js
+│
+└── README.md
+```
 
 ---
 
 ## 🚧 Estado del proyecto
 
-✅ Migración completa de **MongoDB a MySQL relacional**.  
-✅ CRUD de **Áreas** finalizado con validaciones y reglas de negocio.  
-✅ CRUD de **Empleados, Oficinas y Salones** en desarrollo.  
-⏳ Pendiente agregar autenticación y validaciones extra.  
+✅ Migración completa a **estructura modular con Blueprints**.  
+✅ CRUD de **Áreas, Empleados, Oficinas y Salones** operativos.  
+✅ Validaciones y reglas de negocio implementadas.  
+⏳ Pendiente: mejoras visuales y validaciones adicionales en frontend.  
 
 ---
 
 ## 📬 Contacto
 
 👤 Desarrollado por **Juan Hernández**  
-📧 Para dudas, sugerencias o colaboración → https://github.com/Drownfe/CRUD-CAMBRIDGE/issues
+📧 Para dudas, sugerencias o colaboración → [Abrir un issue en GitHub](https://github.com/Drownfe/CRUD-CAMBRIDGE/issues)
