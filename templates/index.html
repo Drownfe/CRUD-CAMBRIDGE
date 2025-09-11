@@ -2,40 +2,51 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Colegio Cambridge</title>
-  <!-- Bootstrap -->
+  <title>Colegio Cambridge - Inicio</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Estilos personalizados -->
-  <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
 </head>
 <body>
-    <div class="container text-center mt-5">
-        <!-- Título -->
-        <h1 class="title-page">
-            <i class="fas fa-school"></i> Colegio Cambridge
-        </h1>
-        <p class="text-success fw-bold">
-            ✅ Backend conectado a la base de datos <strong>CAMBRIDGE_DB</strong>
-        </p>
+  <div class="container text-center mt-5">
+    <h1 class="titulo">🏫 Colegio Cambridge</h1>
+    <p class="subtitulo">Sistema de Gestión Académica</p>
 
-        <!-- Botones principales -->
-        <div class="d-flex justify-content-center flex-wrap gap-3 mt-4">
-            <a href="/areas" class="btn btn-primary btn-lg menu-btn">
-                <i class="fas fa-landmark"></i> Áreas
-            </a>
-            <a href="/empleados" class="btn btn-success btn-lg menu-btn">
-                <i class="fas fa-user-tie"></i> Empleados
-            </a>
-            <a href="/oficinas" class="btn btn-warning btn-lg menu-btn text-dark">
-                <i class="fas fa-building"></i> Oficinas
-            </a>
-            <a href="/salones" class="btn btn-info btn-lg menu-btn text-dark">
-                <i class="fas fa-chalkboard"></i> Salones
-            </a>
+    <div class="row mt-4">
+      <div class="col-md-3">
+        <div class="card card-menu" onclick="irA('/areas')">
+          <div class="card-body">
+            <h5 class="card-title">📌 Áreas</h5>
+            <p class="card-text">Gestiona las áreas académicas y administrativas.</p>
+          </div>
         </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card card-menu" onclick="irA('/empleados')">
+          <div class="card-body">
+            <h5 class="card-title">👩‍🏫 Empleados</h5>
+            <p class="card-text">Registra y administra los empleados del colegio.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card card-menu" onclick="irA('/oficinas')">
+          <div class="card-body">
+            <h5 class="card-title">🏢 Oficinas</h5>
+            <p class="card-text">Gestiona las oficinas asignadas a cada área.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card card-menu" onclick="irA('/salones')">
+          <div class="card-body">
+            <h5 class="card-title">🏫 Salones</h5>
+            <p class="card-text">Administra los salones de clases y espacios físicos.</p>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 </body>
 </html>

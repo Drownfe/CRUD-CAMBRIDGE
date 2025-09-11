@@ -1,0 +1,39 @@
+body {
+  background: linear-gradient(to bottom right, #1d3557, #457b9d, #a8dadc);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #f1faee;
+  min-height: 100vh;
+}
+
+.titulo {
+  font-weight: bold;
+  color: #f1faee;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.subtitulo {
+  font-size: 1.2rem;
+  color: #dceefc;
+}
+
+.card-menu {
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: none;
+  border-radius: 15px;
+  background: #f8f9fa;
+}
+
+.card-menu:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+.card-title {
+  font-weight: bold;
+  color: #1d3557;
+}
+
+.card-text {
+  color: #333;
+}
