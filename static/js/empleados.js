@@ -1,147 +1,119 @@
-// ==========================
-// CARGAR EMPLEADOS (READ)
-// ==========================
-async function cargarEmpleados() {
-    try {
-        const res = await fetch("/api/empleados");
-        const empleados = await res.json();
+document.addEventListener("DOMContentLoaded", () => {
+  const formEmpleado = document.getElementById("formEmpleado");
+  const listaEmpleados = document.getElementById("listaEmpleados");
+  const areaSelect = document.getElementById("idAreaEmpleado");
+  const oficinaSelect = document.getElementById("idOficinaEmpleado");
 
-        const container = document.getElementById("empleadosContainer");
-        container.innerHTML = "";
+  // 🔹 Cargar datos iniciales
+  cargarEmpleados();
+  cargarAreasYOficinas();
 
-        empleados.forEach(emp => {
-            const card = document.createElement("div");
-            card.className = "col-lg-6 col-md-8 mb-3";
-            card.innerHTML = `
-                <div class="card custom-card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span>
-                            <i class="fas fa-user"></i> ${emp.nombre}  
-                            <br><small>ID: ${emp.identificacion} | Tipo: ${emp.tipo || "-"} | Subtipo: ${emp.subtipo || "-"}</small>
-                        </span>
-                        <div>
-                            <button class="btn btn-sm btn-warning me-2" onclick="editarEmpleado(${emp.id}, '${emp.identificacion}', '${emp.nombre}', '${emp.tipo || ""}', '${emp.subtipo || ""}')">
-                                <i class="fas fa-edit"></i> Editar
-                            </button>
-                            <button class="btn btn-sm btn-danger" onclick="eliminarEmpleado(${emp.id})">
-                                <i class="fas fa-trash"></i> Eliminar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            container.appendChild(card);
-        });
-    } catch (error) {
-        console.error("Error al cargar empleados:", error);
-    }
-}
-
-// ==========================
-// CREAR EMPLEADO (CREATE)
-// ==========================
-document.getElementById("formEmpleado").addEventListener("submit", async function(e) {
+  // 🔹 Evento agregar empleado
+  formEmpleado.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const data = {
-        identificacion: document.getElementById("identificacion").value.trim(),
-        nombre: document.getElementById("nombre").value.trim(),
-        tipo: document.getElementById("tipo").value.trim(),
-        subtipo: document.getElementById("subtipo").value.trim(),
-        idArea: 1,     // TODO: integrar selects de área
-        idOficina: 1   // TODO: integrar selects de oficina
+    const empleado = {
+      identificacion: document.getElementById("identificacion").value.trim(),
+      nombre: document.getElementById("nombreEmpleado").value.trim(),
+      tipo: document.getElementById("tipoEmpleado").value.trim(),
+      subtipo: document.getElementById("subtipoEmpleado").value.trim(),
+      idArea: parseInt(areaSelect.value),
+      idOficina: parseInt(oficinaSelect.value),
     };
 
-    try {
-        const response = await fetch("/api/empleados", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
-        });
+    const resp = await fetch("/api/empleados", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(empleado),
+    });
 
-        const result = await response.json();
-
-        if (response.ok && result.status !== "error") {
-            alert("Empleado agregado correctamente ✅");
-            this.reset();
-            cargarEmpleados();
-        } else {
-            alert("⚠️ " + result.message);
-        }
-    } catch (error) {
-        console.error("Error al crear empleado:", error);
+    if (resp.ok) {
+      formEmpleado.reset();
+      cargarEmpleados();
+    } else {
+      alert("⚠️ Error al agregar empleado.");
     }
+  });
+
+  // 🔹 Función cargar empleados
+  async function cargarEmpleados() {
+    listaEmpleados.innerHTML = "";
+    const resp = await fetch("/api/empleados");
+    const data = await resp.json();
+
+    data.forEach((empleado) => {
+      const col = document.createElement("div");
+      col.className = "col-md-6";
+
+      col.innerHTML = `
+        <div class="card card-custom">
+          <div class="card-body">
+            <h5>${empleado.nombre} <small>(ID: ${empleado.id})</small></h5>
+            <p>🪪 ${empleado.identificacion} | 👔 ${empleado.tipo} | 📘 ${empleado.subtipo}</p>
+            <p>📌 Área: ${empleado.idArea} - ${empleado.areaNombre} <br> 🏢 Oficina: ${empleado.idOficina} - ${empleado.oficinaCodigo}</p>
+            <div class="d-flex justify-content-center gap-2 mt-2">
+              <button class="btn btn-warning btn-sm" onclick="editarEmpleado(${empleado.id}, '${empleado.nombre}')">Editar</button>
+              <button class="btn btn-danger btn-sm" onclick="eliminarEmpleado(${empleado.id})">Eliminar</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      listaEmpleados.appendChild(col);
+    });
+  }
+
+  // 🔹 Cargar áreas y oficinas en selects
+  async function cargarAreasYOficinas() {
+    // Áreas
+    const respAreas = await fetch("/api/areas");
+    const areas = await respAreas.json();
+    areaSelect.innerHTML = "";
+    areas.forEach((a) => {
+      const opt = document.createElement("option");
+      opt.value = a.id;
+      opt.textContent = `Área ${a.id}: ${a.nombre}`;
+      areaSelect.appendChild(opt);
+    });
+
+    // Oficinas
+    const respOficinas = await fetch("/api/oficinas");
+    const oficinas = await respOficinas.json();
+    oficinaSelect.innerHTML = "";
+    oficinas.forEach((o) => {
+      const opt = document.createElement("option");
+      opt.value = o.id;
+      opt.textContent = `Oficina ${o.id}: ${o.codigo} (Área ${o.idArea})`;
+      oficinaSelect.appendChild(opt);
+    });
+  }
 });
 
-// ==========================
-// EDITAR EMPLEADO (UPDATE)
-// ==========================
-function editarEmpleado(id, identificacion, nombre, tipo, subtipo) {
-    document.getElementById("editIdEmpleado").value = id;
-    document.getElementById("editIdentificacion").value = identificacion;
-    document.getElementById("editNombre").value = nombre;
-    document.getElementById("editTipo").value = tipo;
-    document.getElementById("editSubtipo").value = subtipo;
-
-    new bootstrap.Modal(document.getElementById("modalEditarEmpleado")).show();
+// 🔹 Editar empleado
+async function editarEmpleado(id, nombreActual) {
+  const nuevoNombre = prompt("✏️ Editar nombre del empleado:", nombreActual);
+  if (nuevoNombre && nuevoNombre.trim() !== "") {
+    const resp = await fetch(`/api/empleados/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nombre: nuevoNombre }),
+    });
+    if (resp.ok) {
+      location.reload();
+    } else {
+      alert("⚠️ Error al actualizar el empleado.");
+    }
+  }
 }
 
-document.getElementById("formEditarEmpleado").addEventListener("submit", async function(e) {
-    e.preventDefault();
-
-    const id = document.getElementById("editIdEmpleado").value;
-    const data = {
-        identificacion: document.getElementById("editIdentificacion").value.trim(),
-        nombre: document.getElementById("editNombre").value.trim(),
-        tipo: document.getElementById("editTipo").value.trim(),
-        subtipo: document.getElementById("editSubtipo").value.trim(),
-        idArea: 1,     // TODO: integrar selects de área
-        idOficina: 1   // TODO: integrar selects de oficina
-    };
-
-    try {
-        const response = await fetch(`/api/empleados/${id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
-        });
-
-        const result = await response.json();
-
-        if (response.ok && result.status !== "error") {
-            alert("Empleado actualizado correctamente ✅");
-            bootstrap.Modal.getInstance(document.getElementById("modalEditarEmpleado")).hide();
-            cargarEmpleados();
-        } else {
-            alert("⚠️ " + result.message);
-        }
-    } catch (error) {
-        console.error("Error al actualizar empleado:", error);
-    }
-});
-
-// ==========================
-// ELIMINAR EMPLEADO (DELETE)
-// ==========================
+// 🔹 Eliminar empleado
 async function eliminarEmpleado(id) {
-    if (!confirm("¿Seguro que quieres eliminar este empleado?")) return;
-
-    try {
-        const response = await fetch(`/api/empleados/${id}`, { method: "DELETE" });
-        const result = await response.json();
-
-        if (response.ok && result.status !== "error") {
-            alert("Empleado eliminado correctamente 🗑️");
-            cargarEmpleados();
-        } else {
-            alert("⚠️ " + result.message);
-        }
-    } catch (error) {
-        console.error("Error al eliminar empleado:", error);
+  if (confirm("🗑️ ¿Seguro que deseas eliminar este empleado?")) {
+    const resp = await fetch(`/api/empleados/${id}`, { method: "DELETE" });
+    if (resp.ok) {
+      location.reload();
+    } else {
+      alert("⚠️ No se puede eliminar el empleado porque tiene dependencias asociadas.");
     }
+  }
 }
-
-// ==========================
-// INICIALIZAR
-// ==========================
-document.addEventListener("DOMContentLoaded", cargarEmpleados);

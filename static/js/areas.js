@@ -1,125 +1,84 @@
-// ==========================
-// CARGAR ÁREAS (READ)
-// ==========================
-async function cargarAreas() {
-    try {
-        const res = await fetch("/api/areas");
-        const areas = await res.json();
+document.addEventListener("DOMContentLoaded", () => {
+  const formArea = document.getElementById("formArea");
+  const nombreInput = document.getElementById("nombreArea");
+  const listaAreas = document.getElementById("listaAreas");
 
-        const container = document.getElementById("areasContainer");
-        container.innerHTML = "";
+  // 🔹 Cargar las áreas al inicio
+  cargarAreas();
 
-        areas.forEach(area => {
-            const card = document.createElement("div");
-            card.className = "col-lg-6 col-md-8 mb-3";
-            card.innerHTML = `
-                <div class="card custom-card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span><i class="fas fa-landmark"></i> ${area.nombre} (ID: ${area.id})</span>
-                        <div>
-                            <button class="btn btn-sm btn-warning me-2" onclick="editarArea('${area.id}', '${area.nombre}')">
-                                <i class="fas fa-edit"></i> Editar
-                            </button>
-                            <button class="btn btn-sm btn-danger" onclick="eliminarArea('${area.id}')">
-                                <i class="fas fa-trash"></i> Eliminar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            container.appendChild(card);
-        });
-    } catch (error) {
-        console.error("Error al cargar áreas:", error);
-    }
-}
-
-// CREAR ÁREA (POST /api/areas)
-document.getElementById("formArea").addEventListener("submit", async function (e) {
+  // 🔹 Evento para agregar nueva área
+  formArea.addEventListener("submit", async (e) => {
     e.preventDefault();
+    const nombre = nombreInput.value.trim();
 
-    const data = { nombre: document.getElementById("nombre").value.trim() };
+    if (!nombre) return;
 
-    try {
-        const response = await fetch("/api/areas", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
-        });
+    const resp = await fetch("/api/areas", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nombre }),
+    });
 
-        const result = await response.json();
-
-        if (response.ok && result.status === "ok") {
-            alert(result.message);
-            document.getElementById("formArea").reset();
-            cargarAreas();
-        } else {
-            alert("⚠️ " + result.message);
-        }
-    } catch (error) {
-        console.error("Error al crear área:", error);
-        alert("❌ Error al crear el área");
+    if (resp.ok) {
+      nombreInput.value = "";
+      cargarAreas();
+    } else {
+      alert("⚠️ Error al agregar el área (quizá ya existe).");
     }
+  });
+
+  // 🔹 Función para cargar áreas
+  async function cargarAreas() {
+    listaAreas.innerHTML = "";
+    const resp = await fetch("/api/areas");
+    const data = await resp.json();
+
+    data.forEach((area) => {
+      const col = document.createElement("div");
+      col.className = "col-md-4";
+
+      col.innerHTML = `
+        <div class="card card-custom">
+          <div class="card-body">
+            <h5>${area.nombre} <small>(ID: ${area.id})</small></h5>
+            <div class="d-flex justify-content-center gap-2 mt-2">
+              <button class="btn btn-warning btn-sm" onclick="editarArea(${area.id}, '${area.nombre}')">Editar</button>
+              <button class="btn btn-danger btn-sm" onclick="eliminarArea(${area.id})">Eliminar</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      listaAreas.appendChild(col);
+    });
+  }
 });
 
-
-// ==========================
-// EDITAR ÁREA (UPDATE)
-// ==========================
-function editarArea(id, nombre) {
-    document.getElementById("editId").value = id;
-    document.getElementById("editNombre").value = nombre;
-    new bootstrap.Modal(document.getElementById("modalEditar")).show();
+// 🔹 Editar un área
+async function editarArea(id, nombreActual) {
+  const nuevoNombre = prompt("✏️ Editar nombre del área:", nombreActual);
+  if (nuevoNombre && nuevoNombre.trim() !== "") {
+    const resp = await fetch(`/api/areas/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nombre: nuevoNombre }),
+    });
+    if (resp.ok) {
+      location.reload();
+    } else {
+      alert("⚠️ Error al actualizar el área.");
+    }
+  }
 }
 
-document.getElementById("formEditar").addEventListener("submit", async function (e) {
-    e.preventDefault();
-
-    const id = document.getElementById("editId").value;
-    const data = { nombre: document.getElementById("editNombre").value.trim() };
-
-    try {
-        const response = await fetch(`/api/areas/${id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
-        });
-
-        if (response.ok) {
-            alert("Área actualizada correctamente ✅");
-            bootstrap.Modal.getInstance(document.getElementById("modalEditar")).hide();
-            cargarAreas();
-        } else {
-            alert("Error al actualizar el área ❌");
-        }
-    } catch (error) {
-        console.error("Error al actualizar área:", error);
-    }
-});
-
-// ELIMINAR ÁREA (DELETE /api/areas/:id)
+// 🔹 Eliminar un área
 async function eliminarArea(id) {
-    if (!confirm("¿Seguro que quieres eliminar esta área?")) return;
-
-    try {
-        const response = await fetch(`/api/areas/${id}`, { method: "DELETE" });
-        const result = await response.json();
-
-        if (response.ok && result.status === "ok") {
-            alert(result.message);
-            cargarAreas();
-        } else {
-            alert("⚠️ " + result.message);
-        }
-    } catch (error) {
-        console.error("Error al eliminar área:", error);
-        alert("❌ Error al eliminar el área");
+  if (confirm("🗑️ ¿Seguro que deseas eliminar esta área?")) {
+    const resp = await fetch(`/api/areas/${id}`, { method: "DELETE" });
+    if (resp.ok) {
+      location.reload();
+    } else {
+      alert("⚠️ No se puede eliminar el área porque tiene datos asociados.");
     }
+  }
 }
-
-
-
-// ==========================
-// INICIALIZAR
-// ==========================
-document.addEventListener("DOMContentLoaded", cargarAreas);

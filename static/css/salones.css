@@ -1,23 +1,23 @@
-/* Estilo específico para Oficinas */
+/* Estilo específico para Salones */
 
-#formOficina input {
+#formSalon input {
   border-radius: 10px;
 }
 
-#listaOficinas .card {
+#listaSalones .card {
   min-height: 120px;
 }
 
-#listaOficinas h5 {
+#listaSalones h5 {
   font-size: 1.1rem;
   margin-bottom: 8px;
 }
 
-#listaOficinas p {
+#listaSalones p {
   font-size: 0.9rem;
   color: #333;
 }
 
-#listaOficinas .btn {
+#listaSalones .btn {
   border-radius: 8px;
 }

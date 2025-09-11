@@ -1,94 +1,51 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Empleados del Colegio</title>
-
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- FontAwesome -->
-    <script src="https://kit.fontawesome.com/c7eadad438.js" crossorigin="anonymous"></script>
-
-    <!-- CSS propio -->
-    <link href="{{ url_for('static', filename='css/empleados.css') }}" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>Empleados del Colegio</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/base.css') }}" rel="stylesheet">
 </head>
 <body>
-    <div class="container mt-5">
-        <!-- Título -->
-        <h1 class="text-center mb-4">Empleados del Colegio</h1>
+  <div class="container mt-5 text-center">
+    <h1 class="mb-3">👨‍🏫 Empleados del Colegio</h1>
+    <p class="text-muted">Gestiona los empleados, profesores y personal administrativo</p>
 
-        <!-- Formulario para agregar empleado -->
-        <div class="card form-card shadow-sm mb-4">
-            <div class="card-body">
-                <h5 class="card-title mb-3"><i class="fas fa-user-plus"></i> Agregar Empleado</h5>
-                <form id="formEmpleado" class="row g-2">
-                    <div class="col-md-3">
-                        <input type="text" id="identificacion" class="form-control" placeholder="Identificación" required>
-                    </div>
-                    <div class="col-md-3">
-                        <input type="text" id="nombre" class="form-control" placeholder="Nombre completo" required>
-                    </div>
-                    <div class="col-md-2">
-                        <input type="text" id="tipo" class="form-control" placeholder="Tipo (Docente/Admin)">
-                    </div>
-                    <div class="col-md-2">
-                        <input type="text" id="subtipo" class="form-control" placeholder="Subtipo">
-                    </div>
-                    <div class="col-md-2 d-grid">
-                        <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Agregar</button>
-                    </div>
-                </form>
-            </div>
+    <!-- Formulario agregar empleado -->
+    <form id="formEmpleado" class="card p-3 shadow-sm mb-4">
+      <div class="row g-2">
+        <div class="col-md-2">
+          <input type="text" id="identificacion" class="form-control" placeholder="Identificación" required>
         </div>
-
-        <!-- Contenedor dinámico de empleados -->
-        <div id="empleadosContainer" class="row justify-content-center"></div>
-
-        <!-- Botón volver -->
-        <div class="text-center mt-4">
-            <a href="/" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Volver al inicio
-            </a>
+        <div class="col-md-2">
+          <input type="text" id="nombreEmpleado" class="form-control" placeholder="Nombre" required>
         </div>
-    </div>
-
-    <!-- Modal Editar Empleado -->
-    <div class="modal fade" id="modalEditarEmpleado" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Editar Empleado</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="formEditarEmpleado" class="row g-2">
-                        <input type="hidden" id="editIdEmpleado">
-                        <div class="col-md-3">
-                            <input type="text" id="editIdentificacion" class="form-control" required>
-                        </div>
-                        <div class="col-md-3">
-                            <input type="text" id="editNombre" class="form-control" required>
-                        </div>
-                        <div class="col-md-2">
-                            <input type="text" id="editTipo" class="form-control">
-                        </div>
-                        <div class="col-md-2">
-                            <input type="text" id="editSubtipo" class="form-control">
-                        </div>
-                        <div class="col-md-2 d-grid">
-                            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+        <div class="col-md-2">
+          <input type="text" id="tipoEmpleado" class="form-control" placeholder="Tipo (Ej: Profesor)">
         </div>
-    </div>
+        <div class="col-md-2">
+          <input type="text" id="subtipoEmpleado" class="form-control" placeholder="Subtipo (Ej: Matemáticas)">
+        </div>
+        <div class="col-md-2">
+          <select id="idAreaEmpleado" class="form-select" required>
+            <option value="">Seleccione Área...</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <select id="idOficinaEmpleado" class="form-select" required>
+            <option value="">Seleccione Oficina...</option>
+          </select>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-success w-100 mt-3">Agregar</button>
+    </form>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Listado de empleados -->
+    <div id="listaEmpleados" class="row g-3"></div>
 
-    <!-- JS propio -->
-    <script src="{{ url_for('static', filename='js/empleados.js') }}"></script>
+    <a href="/" class="btn btn-secondary mt-4">Volver al inicio</a>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/empleados.js') }}"></script>
 </body>
 </html>
