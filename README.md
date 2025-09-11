@@ -1,181 +1,116 @@
-# 🎓 CRUD CAMBRIDGE - Proyecto Colegio 🚀
+# 🎓 CRUD CAMBRIDGE – Proyecto Colegio 🚀
 
-Aplicación web para la **gestión de Áreas, Empleados, Oficinas y Salones** del Colegio Cambridge.  
-Construida con **Flask + SQLAlchemy + MySQL**, integrando un modelo **relacional** con rutas CRUD completas, frontend en **HTML + Bootstrap + CSS + JavaScript**, y estructura modular con **Blueprints**.
-
-> ⚠️ Proyecto en construcción 🚧 — se siguen agregando módulos y funcionalidades.
+Este proyecto es una aplicación **Flask + MySQL** para la gestión de un colegio ficticio (Cambridge).  
+Permite administrar **Áreas, Oficinas, Empleados y Salones** a través de un sistema CRUD con interfaz web.
 
 ---
 
-## ✨ Características actuales
-
-- 🐍 **Backend en Flask** conectado a MySQL mediante SQLAlchemy.  
-- 📂 **Tablas en la base de datos**:  
-  - `areas`  
-  - `empleados`  
-  - `oficinas`  
-  - `salones`  
-- 🔗 **API REST** modularizada con `Blueprints` y rutas `/api/...`.  
-- 🎨 **Frontend responsivo** con Bootstrap, CSS propios y JS dinámico por módulo.  
-- 🛡️ **Reglas implementadas**:  
-  - Áreas:  
-    - No se pueden duplicar nombres.  
-    - Nombre entre 3 y 100 caracteres.  
-    - No se pueden eliminar si tienen oficinas, empleados o salones asociados.  
-  - Empleados:  
-    - Identificación obligatoria y única.  
-    - Nombre mínimo 3 caracteres.  
-    - Deben estar vinculados a un área y a una oficina existente.  
-  - Oficinas:  
-    - Código obligatorio y único.  
-    - Longitud entre 2 y 100 caracteres.  
-    - Deben pertenecer a un área existente.  
-    - No se pueden eliminar si tienen empleados asociados.  
-  - Salones:  
-    - Código obligatorio y único.  
-    - Longitud entre 2 y 50 caracteres.  
-    - Deben pertenecer a un área existente.  
+## ✨ Características
+- CRUD completo para:
+  - Áreas (con validación de unicidad y dependencias)
+  - Oficinas (asociadas a un Área)
+  - Empleados (asociados a un Área y Oficina)
+  - Salones (asociados a un Área)
+- Validaciones de datos en backend y frontend
+- Bloqueo de eliminación cuando existen dependencias (IntegrityError controlado)
+- Interfaz web con **Bootstrap + CSS personalizado**
+- Rutas API REST (`/api/...`) + Rutas HTML (`/...`)
+- Configuración con variables de entorno (`.env`)
 
 ---
 
-## 🛠️ Requisitos
-
-- Python 3.10+  
-- MySQL Server 8+  
-- Virtualenv recomendado para aislar dependencias  
+## 🛠️ Tecnologías
+- **Backend:** Flask, Flask-SQLAlchemy, Flask-CORS, PyMySQL, python-dotenv
+- **Frontend:** HTML + Bootstrap 5, CSS, JavaScript (fetch API)
+- **Base de datos:** MySQL
+- **Entorno:** Python 3.13+
 
 ---
 
-## ⚙️ Instalación y configuración
+## ⚙️ Instalación
 
-1. **Clona este repositorio**:
-
+1. Clonar repositorio:
    ```bash
-   git clone https://github.com/Drownfe/CRUD-CAMBRIDGE
+   git clone https://github.com/usuario/CRUD-CAMBRIDGE.git
    cd CRUD-CAMBRIDGE
    ```
 
-2. **Crea y activa un entorno virtual**:
-
+2. Crear entorno virtual:
    ```bash
    python -m venv venv
-   # Linux/macOS
-   source venv/bin/activate
-   # Windows PowerShell
-   venv\Scripts\activate
+   source venv/bin/activate   # Linux/Mac
+   venv\Scripts\activate    # Windows
    ```
 
-3. **Instala las dependencias**:
-
+3. Instalar dependencias:
    ```bash
    pip install -r requirements.txt
    ```
 
-   Dependencias principales:
-   - Flask  
-   - Flask-SQLAlchemy  
-   - Flask-CORS  
-   - PyMySQL  
-   - python-dotenv  
-
-4. **Configura la base de datos MySQL**:
-
-   - Entra a la consola de MySQL:
-
-     ```bash
-     mysql -u root -p
-     ```
-
-   - Crea la base de datos:
-
-     ```sql
-     CREATE DATABASE colegio_cambridge;
-     ```
-
-5. **Configura el archivo `.env`** en la raíz del proyecto:
-
-   ```
-   DB_URI=mysql+pymysql://root:root1234@localhost/colegio_cambridge
+4. Configurar variables de entorno en `.env`:
+   ```ini
+   FLASK_APP=app.py
+   FLASK_ENV=development
+   SQLALCHEMY_DATABASE_URI=mysql+pymysql://usuario:password@localhost/cambridge_db
+   SECRET_KEY=supersecreto
    ```
 
----
+5. Crear base de datos en MySQL:
+   ```sql
+   CREATE DATABASE cambridge_db;
+   ```
 
-## ▶️ Uso
-
-1. **Ejecuta la aplicación Flask**:
-
+6. Inicializar tablas:
    ```bash
-   python app.py
+   flask shell
+   >>> from models import db
+   >>> db.create_all()
    ```
 
-2. Abre tu navegador en:  
-   - 🌐 [http://localhost:5000/areas](http://localhost:5000/areas) → Áreas del Colegio  
-   - 👨‍🏫 [http://localhost:5000/empleados](http://localhost:5000/empleados) → Empleados  
-   - 🏢 [http://localhost:5000/oficinas](http://localhost:5000/oficinas) → Oficinas  
-   - 🏫 [http://localhost:5000/salones](http://localhost:5000/salones) → Salones  
+7. Ejecutar servidor:
+   ```bash
+   flask run
+   ```
 
 ---
 
 ## 📂 Estructura del proyecto
 
 ```
-PDYP_CAMBRIDGE/
-│── app.py
-│── config.py
-│── models.py
-│── .env
-│── requirements.txt
+CRUD-CAMBRIDGE/
+│── app.py              # Punto de entrada principal
+│── config.py           # Configuración (MySQL, Flask, CORS)
+│── models.py           # Modelos de SQLAlchemy
+│── requirements.txt    # Dependencias
+│── .env                # Variables de entorno
 │
-├── routes/
-│   ├── areas.py
-│   ├── empleados.py
-│   ├── oficinas.py
-│   ├── salones.py
-│   └── views.py
-│
-├── templates/
-│   ├── index.html
-│   │
-│   ├── Areas/
-│   │   └── areas.html
-│   │
-│   ├── Empleados/
-│   │   └── empleados.html
-│   │
-│   ├── Oficinas/
-│   │   └── oficinas.html
-│   │
-│   └── Salones/
-│       └── salones.html
-│
+├── routes/             # Blueprints (Áreas, Oficinas, Empleados, Salones, Views)
+├── templates/          # Plantillas HTML (index, áreas, oficinas, empleados, salones)
 ├── static/
-│   ├── css/
-│   │   ├── areas.css
-│   │   ├── empleados.css
-│   │   ├── oficinas.css
-│   │   └── salones.css
-│   │
-│   └── js/
-│       ├── areas.js
-│       ├── empleados.js
-│       ├── oficinas.js
-│       └── salones.js
-│
-└── README.md
+│   ├── css/            # Estilos personalizados
+│   └── js/             # Lógica frontend con fetch API
+└── venv/               # Entorno virtual
 ```
 
 ---
 
-## 🚧 Estado del proyecto
+## 🚀 Endpoints principales
 
-✅ Migración completa a **estructura modular con Blueprints**.  
-✅ CRUD de **Áreas, Empleados, Oficinas y Salones** operativos.  
-✅ Validaciones y reglas de negocio implementadas.  
-⏳ Pendiente: mejoras visuales y validaciones adicionales en frontend.  
+### API REST
+- **Áreas:** `/api/areas`
+- **Oficinas:** `/api/oficinas`
+- **Empleados:** `/api/empleados`
+- **Salones:** `/api/salones`
+
+### Vistas HTML
+- `/` → Página principal
+- `/areas` → Gestión de Áreas
+- `/oficinas` → Gestión de Oficinas
+- `/empleados` → Gestión de Empleados
+- `/salones` → Gestión de Salones
 
 ---
 
-## 📬 Contacto
-
-👤 Desarrollado por **Juan Hernández**  
-📧 Para dudas, sugerencias o colaboración → [Abrir un issue en GitHub](https://github.com/Drownfe/CRUD-CAMBRIDGE/issues)
+## 👨‍💻 Autor
+Desarrollado por **Juan Felipe Hernández**  
+Proyecto académico y personal para práctica de **Flask + MySQL + Frontend**.
