@@ -29,19 +29,22 @@ def add_oficina():
             "message": "⚠️ El código de la oficina debe tener entre 2 y 100 caracteres."
         }), 400
 
-    # Validación de unicidad
-    existente = Oficina.query.filter_by(codigo=codigo).first()
-    if existente:
-        return jsonify({
-            "status": "error",
-            "message": "⚠️ Ya existe una oficina con ese código."
-        }), 400
-
     # Validación: área debe existir
     if not Area.query.get(id_area):
         return jsonify({
             "status": "error",
             "message": "⚠️ El área seleccionada no existe."
+        }), 400
+
+    # Validación: unicidad (codigo + id_area)
+    existente = Oficina.query.filter(
+        Oficina.codigo.ilike(codigo),
+        Oficina.id_area == id_area
+    ).first()
+    if existente:
+        return jsonify({
+            "status": "error",
+            "message": "⚠️ Ya existe una oficina con ese código en el área seleccionada."
         }), 400
 
     nueva_oficina = Oficina(codigo=codigo, id_area=id_area)
@@ -72,22 +75,23 @@ def update_oficina(id):
             "message": "⚠️ El código de la oficina debe tener entre 2 y 100 caracteres."
         }), 400
 
-    # Validación de unicidad (ignora la propia oficina)
-    existente = Oficina.query.filter(
-        Oficina.codigo.ilike(codigo),
-        Oficina.id_oficina != id
-    ).first()
-    if existente:
-        return jsonify({
-            "status": "error",
-            "message": "⚠️ Ya existe otra oficina con ese código."
-        }), 400
-
     # Validación: área debe existir
     if id_area and not Area.query.get(id_area):
         return jsonify({
             "status": "error",
             "message": "⚠️ El área seleccionada no existe."
+        }), 400
+
+    # Validación: unicidad (codigo + id_area)
+    existente = Oficina.query.filter(
+        Oficina.codigo.ilike(codigo),
+        Oficina.id_area == (id_area if id_area else oficina.id_area),
+        Oficina.id_oficina != id
+    ).first()
+    if existente:
+        return jsonify({
+            "status": "error",
+            "message": "⚠️ Ya existe otra oficina con ese código en el área seleccionada."
         }), 400
 
     oficina.codigo = codigo

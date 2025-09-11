@@ -31,7 +31,8 @@ document.addEventListener("DOMContentLoaded", () => {
       formEmpleado.reset();
       cargarEmpleados();
     } else {
-      alert("⚠️ Error al agregar empleado.");
+      const err = await resp.json();
+      alert(err.message || "⚠️ Error al agregar empleado.");
     }
   });
 
@@ -65,7 +66,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 🔹 Cargar áreas y oficinas en selects
   async function cargarAreasYOficinas() {
-    // Áreas
     const respAreas = await fetch("/api/areas");
     const areas = await respAreas.json();
     areaSelect.innerHTML = "";
@@ -76,7 +76,6 @@ document.addEventListener("DOMContentLoaded", () => {
       areaSelect.appendChild(opt);
     });
 
-    // Oficinas
     const respOficinas = await fetch("/api/oficinas");
     const oficinas = await respOficinas.json();
     oficinaSelect.innerHTML = "";
@@ -101,7 +100,8 @@ async function editarEmpleado(id, nombreActual) {
     if (resp.ok) {
       location.reload();
     } else {
-      alert("⚠️ Error al actualizar el empleado.");
+      const err = await resp.json();
+      alert(err.message || "⚠️ Error al actualizar el empleado.");
     }
   }
 }
@@ -113,7 +113,8 @@ async function eliminarEmpleado(id) {
     if (resp.ok) {
       location.reload();
     } else {
-      alert("⚠️ No se puede eliminar el empleado porque tiene dependencias asociadas.");
+      const err = await resp.json();
+      alert(err.message || "⚠️ No se puede eliminar el empleado.");
     }
   }
 }

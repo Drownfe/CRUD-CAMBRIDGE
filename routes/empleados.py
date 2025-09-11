@@ -27,13 +27,9 @@ def add_empleado():
     id_area = data.get("idArea")
     id_oficina = data.get("idOficina")
 
-    # Validación: identificación obligatoria y única
+    # Validación: identificación obligatoria
     if not identificacion:
         return jsonify({"status": "error", "message": "⚠️ La identificación es obligatoria."}), 400
-
-    existente = Empleado.query.filter_by(identificacion=identificacion).first()
-    if existente:
-        return jsonify({"status": "error", "message": "⚠️ Ya existe un empleado con esa identificación."}), 400
 
     # Validación: nombre mínimo
     if len(nombre) < 3:
@@ -55,13 +51,17 @@ def add_empleado():
         id_oficina=id_oficina
     )
     db.session.add(nuevo_empleado)
-    db.session.commit()
 
-    return jsonify({
-        "status": "ok",
-        "message": "Empleado agregado con éxito ✅",
-        "empleado": nuevo_empleado.to_dict()
-    }), 201
+    try:
+        db.session.commit()
+        return jsonify({
+            "status": "ok",
+            "message": "Empleado agregado con éxito ✅",
+            "empleado": nuevo_empleado.to_dict()
+        }), 201
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({"status": "error", "message": "⚠️ Ya existe un empleado con esa identificación."}), 400
 
 # ==========================
 # PUT - Actualizar empleado
@@ -78,16 +78,6 @@ def update_empleado(id):
     id_area = data.get("idArea")
     id_oficina = data.get("idOficina")
 
-    # Validar identificación única
-    if identificacion:
-        existente = Empleado.query.filter(
-            Empleado.identificacion == identificacion,
-            Empleado.id_empleado != id
-        ).first()
-        if existente:
-            return jsonify({"status": "error", "message": "⚠️ Otro empleado ya tiene esa identificación."}), 400
-        empleado.identificacion = identificacion
-
     # Validar nombre
     if len(nombre) < 3:
         return jsonify({"status": "error", "message": "⚠️ El nombre debe tener al menos 3 caracteres."}), 400
@@ -95,6 +85,9 @@ def update_empleado(id):
     empleado.nombre = nombre
     empleado.tipo = tipo
     empleado.subtipo = subtipo
+
+    if identificacion:
+        empleado.identificacion = identificacion
 
     # Validar área y oficina
     if id_area and not Area.query.get(id_area):
@@ -107,13 +100,16 @@ def update_empleado(id):
     if id_oficina:
         empleado.id_oficina = id_oficina
 
-    db.session.commit()
-
-    return jsonify({
-        "status": "ok",
-        "message": "Empleado actualizado con éxito ✅",
-        "empleado": empleado.to_dict()
-    })
+    try:
+        db.session.commit()
+        return jsonify({
+            "status": "ok",
+            "message": "Empleado actualizado con éxito ✅",
+            "empleado": empleado.to_dict()
+        })
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({"status": "error", "message": "⚠️ Otro empleado ya tiene esa identificación."}), 400
 
 # ==========================
 # DELETE - Eliminar empleado

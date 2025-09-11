@@ -3,11 +3,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const listaOficinas = document.getElementById("listaOficinas");
   const selectArea = document.getElementById("idAreaOficina");
 
-  // 🔹 Cargar oficinas al inicio
   cargarOficinas();
   cargarAreas();
 
-  // 🔹 Evento agregar oficina
   formOficina.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -26,11 +24,11 @@ document.addEventListener("DOMContentLoaded", () => {
       formOficina.reset();
       cargarOficinas();
     } else {
-      alert("⚠️ Error al agregar oficina (quizá ya existe o el área no es válida).");
+      const err = await resp.json();
+      alert(err.message || "⚠️ Error al agregar oficina.");
     }
   });
 
-  // 🔹 Función cargar oficinas
   async function cargarOficinas() {
     listaOficinas.innerHTML = "";
     const resp = await fetch("/api/oficinas");
@@ -57,11 +55,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 🔹 Cargar áreas en el select
   async function cargarAreas() {
     const resp = await fetch("/api/areas");
     const data = await resp.json();
-
     selectArea.innerHTML = "";
     data.forEach((a) => {
       const opt = document.createElement("option");
@@ -72,7 +68,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// 🔹 Editar oficina
 async function editarOficina(id, codigoActual) {
   const nuevoCodigo = prompt("✏️ Editar código de la oficina:", codigoActual);
   if (nuevoCodigo && nuevoCodigo.trim() !== "") {
@@ -84,19 +79,20 @@ async function editarOficina(id, codigoActual) {
     if (resp.ok) {
       location.reload();
     } else {
-      alert("⚠️ Error al actualizar la oficina.");
+      const err = await resp.json();
+      alert(err.message || "⚠️ Error al actualizar la oficina.");
     }
   }
 }
 
-// 🔹 Eliminar oficina
 async function eliminarOficina(id) {
   if (confirm("🗑️ ¿Seguro que deseas eliminar esta oficina?")) {
     const resp = await fetch(`/api/oficinas/${id}`, { method: "DELETE" });
     if (resp.ok) {
       location.reload();
     } else {
-      alert("⚠️ No se puede eliminar la oficina porque tiene empleados asociados.");
+      const err = await resp.json();
+      alert(err.message || "⚠️ No se puede eliminar la oficina.");
     }
   }
 }

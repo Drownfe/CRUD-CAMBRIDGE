@@ -1,10 +1,4 @@
-// ------- Utilidades básicas -------
-async function apiGet(url) {
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`GET ${url} -> ${r.status}`);
-  return r.json();
-}
-
+// ------- Utilidades -------
 async function apiSend(url, method = "POST", data = null) {
   const r = await fetch(url, {
     method,
@@ -12,74 +6,49 @@ async function apiSend(url, method = "POST", data = null) {
     body: data ? JSON.stringify(data) : null,
   });
   if (!r.ok) {
-    const msg = await r.text().catch(() => "");
-    throw new Error(`${method} ${url} -> ${r.status} ${msg}`);
+    const msg = await r.json().catch(() => ({}));
+    throw new Error(msg.message || `⚠️ Error ${method} ${url}`);
   }
   return r.json().catch(() => ({}));
 }
 
-function fillSelect(selectEl, options, selected = null) {
-  selectEl.innerHTML = `<option value="">Seleccione Área...</option>`;
-  for (const a of options) {
-    const opt = document.createElement("option");
-    opt.value = a.id;
-    opt.textContent = `Área ${a.id}: ${a.nombre}`;
-    if (selected !== null && Number(selected) === Number(a.id)) {
-      opt.selected = true;
-    }
-    selectEl.appendChild(opt);
-  }
-}
-
 // ------- Estado -------
 let AREAS = [];
-let AREAS_MAP = new Map(); // id -> nombre
+let AREAS_MAP = new Map();
 let modalEditar;
 
-// ------- Referencias DOM -------
+// ------- Referencias -------
 const formSalon = document.getElementById("formSalon");
 const codigoSalon = document.getElementById("codigoSalon");
 const idAreaSalon = document.getElementById("idAreaSalon");
-
 const listaSalones = document.getElementById("listaSalones");
-
 const formEditarSalon = document.getElementById("formEditarSalon");
 const editIdSalon = document.getElementById("editIdSalon");
 const editCodigoSalon = document.getElementById("editCodigoSalon");
 const editIdAreaSalon = document.getElementById("editIdAreaSalon");
 
-// ------- Carga inicial -------
 document.addEventListener("DOMContentLoaded", async () => {
   modalEditar = new bootstrap.Modal(document.getElementById("modalEditarSalon"));
-
-  try {
-    await cargarAreas();
-    await cargarSalones();
-  } catch (e) {
-    console.error(e);
-    alert("Error cargando datos iniciales.");
-  }
+  await cargarAreas();
+  await cargarSalones();
 });
 
-// ------- Cargar Áreas -------
 async function cargarAreas() {
-  AREAS = await apiGet("/api/areas");
+  const resp = await fetch("/api/areas");
+  AREAS = await resp.json();
   AREAS_MAP.clear();
-  for (const a of AREAS) {
-    AREAS_MAP.set(Number(a.id), a.nombre);
-  }
-  // llenar ambos selects
+  AREAS.forEach((a) => AREAS_MAP.set(Number(a.id), a.nombre));
+
   fillSelect(idAreaSalon, AREAS);
   fillSelect(editIdAreaSalon, AREAS);
 }
 
-// ------- Cargar Salones -------
 async function cargarSalones() {
-  const salones = await apiGet("/api/salones");
+  const resp = await fetch("/api/salones");
+  const salones = await resp.json();
   renderSalones(salones);
 }
 
-// ------- Render Cards -------
 function renderSalones(salones) {
   listaSalones.innerHTML = "";
   if (!salones.length) {
@@ -109,18 +78,14 @@ function renderSalones(salones) {
     listaSalones.appendChild(col);
   }
 
-  // Delegación de eventos para editar/eliminar
   listaSalones.querySelectorAll("button[data-action]").forEach(btn => {
     btn.addEventListener("click", (ev) => {
       const action = ev.currentTarget.dataset.action;
       const id = ev.currentTarget.dataset.id;
 
       if (action === "editar") {
-        const codigo = ev.currentTarget.dataset.codigo;
-        const idArea = ev.currentTarget.dataset.idarea;
-        abrirModalEditar(id, codigo, idArea);
+        abrirModalEditar(id, ev.currentTarget.dataset.codigo, ev.currentTarget.dataset.idarea);
       }
-
       if (action === "eliminar") {
         eliminarSalon(id);
       }
@@ -128,14 +93,13 @@ function renderSalones(salones) {
   });
 }
 
-// ------- Agregar -------
 formSalon.addEventListener("submit", async (e) => {
   e.preventDefault();
   const codigo = codigoSalon.value.trim();
   const idArea = idAreaSalon.value;
 
   if (!codigo || !idArea) {
-    alert("Completa el código del salón y selecciona un Área.");
+    alert("⚠️ Completa el código del salón y selecciona un Área.");
     return;
   }
 
@@ -144,12 +108,10 @@ formSalon.addEventListener("submit", async (e) => {
     formSalon.reset();
     await cargarSalones();
   } catch (err) {
-    console.error(err);
-    alert("No se pudo agregar el salón.");
+    alert(err.message);
   }
 });
 
-// ------- Editar -------
 function abrirModalEditar(id, codigo, idArea) {
   editIdSalon.value = id;
   editCodigoSalon.value = codigo;
@@ -164,7 +126,7 @@ formEditarSalon.addEventListener("submit", async (e) => {
   const idArea = editIdAreaSalon.value;
 
   if (!codigo || !idArea) {
-    alert("Completa el código del salón y selecciona un Área.");
+    alert("⚠️ Completa el código del salón y selecciona un Área.");
     return;
   }
 
@@ -173,12 +135,10 @@ formEditarSalon.addEventListener("submit", async (e) => {
     modalEditar.hide();
     await cargarSalones();
   } catch (err) {
-    console.error(err);
-    alert("No se pudo actualizar el salón.");
+    alert(err.message);
   }
 });
 
-// ------- Eliminar -------
 async function eliminarSalon(id) {
   if (!confirm("¿Seguro que deseas eliminar este salón?")) return;
 
@@ -186,7 +146,19 @@ async function eliminarSalon(id) {
     await apiSend(`/api/salones/${id}`, "DELETE");
     await cargarSalones();
   } catch (err) {
-    console.error(err);
-    alert("No se pudo eliminar el salón.");
+    alert(err.message);
+  }
+}
+
+function fillSelect(selectEl, options, selected = null) {
+  selectEl.innerHTML = `<option value="">Seleccione Área...</option>`;
+  for (const a of options) {
+    const opt = document.createElement("option");
+    opt.value = a.id;
+    opt.textContent = `Área ${a.id}: ${a.nombre}`;
+    if (selected !== null && Number(selected) === Number(a.id)) {
+      opt.selected = true;
+    }
+    selectEl.appendChild(opt);
   }
 }
