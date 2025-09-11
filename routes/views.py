@@ -13,16 +13,16 @@ def index():
 
 @views_bp.route("/areas")
 def areas_page():
-    return render_template("Areas/areas.html")
+    return render_template("areas.html")
 
 @views_bp.route("/empleados")
 def empleados_page():
-    return render_template("Empleados/empleados.html")
+    return render_template("empleados.html")
 
 @views_bp.route("/oficinas")
 def oficinas_page():
-    return render_template("Oficinas/oficinas.html")
+    return render_template("oficinas.html")
 
 @views_bp.route("/salones")
 def salones_page():
-    return render_template("Salones/salones.html")
+    return render_template("salones.html")
