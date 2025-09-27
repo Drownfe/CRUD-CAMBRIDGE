@@ -26,7 +26,7 @@ Este proyecto implementa un sistema de gestión académica para el **Colegio Cam
 1. Clonar este repositorio:
 
    ```bash
-   git clone <URL_REPOSITORIO>
+   git clone https://github.com/Drownfe/CRUD-CAMBRIDGE
    cd CRUD-CAMBRIDGE
    ```
 
