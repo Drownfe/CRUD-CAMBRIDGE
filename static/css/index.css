@@ -5,35 +5,42 @@ body {
   min-height: 100vh;
 }
 
-.titulo {
+h1.titulo {
   font-weight: bold;
   color: #f1faee;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
 .subtitulo {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   color: #dceefc;
+  margin-bottom: 30px;
 }
 
-.card-menu {
+/* ==== Tarjetas de menú / módulos ==== */
+.card-custom,
+.card-menu { /* Ambas comparten estilos */
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
   border: none;
   border-radius: 15px;
   background: #f8f9fa;
+  margin-bottom: 20px;
 }
 
+.card-custom:hover,
 .card-menu:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 16px rgba(0,0,0,0.2);
 }
 
-.card-title {
+.card-custom h5,
+.card-menu h5 {
   font-weight: bold;
   color: #1d3557;
 }
 
-.card-text {
+.card-custom p,
+.card-menu p {
   color: #333;
 }

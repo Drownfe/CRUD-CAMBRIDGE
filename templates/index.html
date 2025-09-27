@@ -11,33 +11,37 @@
     <h1 class="titulo">🏫 Colegio Cambridge</h1>
     <p class="subtitulo">Sistema de Gestión Académica</p>
 
-    <div class="row mt-4">
+    <!-- Fila 1: 4 módulos -->
+    <div class="row mt-4 g-4">
       <div class="col-md-3">
-        <div class="card card-menu" onclick="irA('/areas')">
+        <div class="card card-custom" onclick="irA('/areas')">
           <div class="card-body">
             <h5 class="card-title">📌 Áreas</h5>
             <p class="card-text">Gestiona las áreas académicas y administrativas.</p>
           </div>
         </div>
       </div>
+
       <div class="col-md-3">
-        <div class="card card-menu" onclick="irA('/empleados')">
+        <div class="card card-custom" onclick="irA('/empleados')">
           <div class="card-body">
             <h5 class="card-title">👩‍🏫 Empleados</h5>
             <p class="card-text">Registra y administra los empleados del colegio.</p>
           </div>
         </div>
       </div>
+
       <div class="col-md-3">
-        <div class="card card-menu" onclick="irA('/oficinas')">
+        <div class="card card-custom" onclick="irA('/oficinas')">
           <div class="card-body">
             <h5 class="card-title">🏢 Oficinas</h5>
             <p class="card-text">Gestiona las oficinas asignadas a cada área.</p>
           </div>
         </div>
       </div>
+
       <div class="col-md-3">
-        <div class="card card-menu" onclick="irA('/salones')">
+        <div class="card card-custom" onclick="irA('/salones')">
           <div class="card-body">
             <h5 class="card-title">🏫 Salones</h5>
             <p class="card-text">Administra los salones de clases y espacios físicos.</p>
@@ -45,8 +49,23 @@
         </div>
       </div>
     </div>
+
+    <!-- Fila 2: GraphQL centrado -->
+    <div class="row mt-2 g-4">
+      <div class="col-md-3 mx-auto">
+        <div class="card card-custom" onclick="window.open('/graphql','_blank')">
+          <div class="card-body">
+            <h5 class="card-title">⚡ GraphQL</h5>
+            <p class="card-text">Accede al explorador GraphQL para realizar consultas y pruebas.</p>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
+  <script>
+    function irA(ruta){ window.location.href = ruta; }
+  </script>
   <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 </body>
 </html>

@@ -1,45 +1,37 @@
-# 🎓 CRUD CAMBRIDGE – Proyecto Colegio 🚀
+# 🏫 Colegio Cambridge - Sistema de Gestión Académica
 
-Este proyecto es una aplicación **Flask + MySQL** que implementa la gestión de la planta física y el personal de un colegio ficticio (Cambridge).  
-Se desarrolló como parte de un taller académico de Tecnologías Web, cumpliendo con los requisitos solicitados: **arquitectura por capas, CRUD completo, reporte, diagrama de clases e informe**.
+Este proyecto implementa un sistema de gestión académica para el **Colegio Cambridge**, desarrollado en **Flask + MySQL** con dos capas de consumo:
 
----
-
-## ✨ Requisitos cumplidos
-- ✔️ **Diagrama de clases** (realizado por el compañero de grupo).
-- ✔️ **CRUD completo** para Áreas, Oficinas, Empleados y Salones.
-- ✔️ **Reporte de Áreas y Empleados** (se puede generar desde la base de datos y visualizar en el sistema/informe).
-- ✔️ **Informe final** (documento complementario con capturas y explicación del sistema).
+- **CRUD clásico (REST/HTML)** para Áreas, Empleados, Oficinas y Salones.
+- **GraphQL** con Ariadne para consultas y reportes avanzados.
 
 ---
 
-## 📌 Funcionalidad
-- **Áreas**: Se crean, editan y eliminan; un área contiene oficinas, empleados y salones.  
-- **Oficinas**: Se asocian a un área, tienen un código único dentro de cada área.  
-- **Empleados**: Se asocian a un área y oficina, tienen identificación única y clasificación (profesor planta/contratista o administrativo).  
-- **Salones**: Se asocian a un área, con código único dentro de cada área.  
+## 🚀 Características
 
-El sistema bloquea la eliminación si existen dependencias (ejemplo: no se puede borrar un área con oficinas o empleados asociados).
-
----
-
-## 🛠️ Tecnologías utilizadas
-- **Backend:** Flask, Flask-SQLAlchemy, Flask-CORS, PyMySQL, python-dotenv  
-- **Frontend:** HTML5, Bootstrap 5, CSS personalizado, JavaScript (fetch API)  
-- **Base de datos:** MySQL  
-- **Entorno:** Python 3.13+  
+- CRUD completo de:
+  - 📌 Áreas
+  - 👩‍🏫 Empleados
+  - 🏢 Oficinas
+  - 🏫 Salones
+- Reportes de Áreas con sus empleados (REST y GraphQL).
+- Validaciones de integridad (no se eliminan áreas con dependencias, identificación única en empleados, etc.).
+- Frontend responsivo con Bootstrap y cards modulares.
+- Explorador **GraphiQL** en `/graphql`.
 
 ---
 
 ## ⚙️ Instalación
 
-1. Clonar el repositorio:
+1. Clonar este repositorio:
+
    ```bash
-   git clone https://github.com/usuario/CRUD-CAMBRIDGE.git
+   git clone <URL_REPOSITORIO>
    cd CRUD-CAMBRIDGE
    ```
 
-2. Crear entorno virtual:
+2. Crear y activar entorno virtual:
+
    ```bash
    python -m venv venv
    source venv/bin/activate   # Linux/Mac
@@ -47,36 +39,35 @@ El sistema bloquea la eliminación si existen dependencias (ejemplo: no se puede
    ```
 
 3. Instalar dependencias:
+
    ```bash
    pip install -r requirements.txt
    ```
 
-4. Configurar variables de entorno en `.env`:
-   ```ini
-   FLASK_APP=app.py
-   FLASK_ENV=development
-   SQLALCHEMY_DATABASE_URI=mysql+pymysql://usuario:password@localhost/cambridge_db
+4. Configurar base de datos en `.env` o `config.py`:
+
+   ```env
+   DB_URI=mysql+pymysql://root:root1234@localhost/colegio_cambridge
    SECRET_KEY=supersecreto
+   FLASK_DEBUG=1
    ```
 
-5. Crear base de datos en MySQL:
+5. Crear la base de datos e importar el esquema:
+
    ```sql
-   CREATE DATABASE cambridge_db;
+   CREATE DATABASE colegio_cambridge;
+   USE colegio_cambridge;
+   SOURCE schema.sql;
+   SOURCE seed.sql;
    ```
 
-6. Ejecutar migraciones / crear tablas desde Python:
-   ```bash
-   flask shell
-   >>> from models import db
-   >>> db.create_all()
-   ```
+6. Ejecutar el servidor:
 
-7. Cargar datos de ejemplo con el script SQL provisto o manualmente.  
-
-8. Iniciar servidor:
    ```bash
    flask run
    ```
+
+   La app estará disponible en [http://127.0.0.1:5000](http://127.0.0.1:5000)
 
 ---
 
@@ -84,52 +75,153 @@ El sistema bloquea la eliminación si existen dependencias (ejemplo: no se puede
 
 ```
 CRUD-CAMBRIDGE/
-│── app.py              # Punto de entrada principal
-│── config.py           # Configuración (Flask, SQLAlchemy, CORS)
-│── models.py           # Modelos de SQLAlchemy
-│── requirements.txt    # Dependencias
-│── .env                # Variables de entorno
+│── app.py
+│── config.py
+│── models.py
+│── graphql_schema.py   # Definición de schema, queries, mutations, resolvers
+│── requirements.txt
+│── README.md
 │
-├── routes/             # Blueprints (áreas, oficinas, empleados, salones, vistas)
-├── templates/          # Plantillas HTML (index, áreas, oficinas, empleados, salones, reporte)
+├── routes/             # Blueprints CRUD (áreas, empleados, oficinas, salones)
+├── templates/          # HTML (Bootstrap)
+│   └── index.html      # Home con cards y acceso a GraphQL
 ├── static/
-│   ├── css/            # Estilos personalizados
-│   └── js/             # Lógica frontend con fetch API
-└── venv/               # Entorno virtual
+│   ├── css/
+│   │   ├── base.css
+│   │   └── index.css
+│   └── js/
+│       └── index.js
+└── venv/
 ```
 
 ---
 
-## 🚀 Endpoints principales
+## 🔗 Endpoints principales
 
-### API REST
-- **Áreas:** `/api/areas`
-- **Oficinas:** `/api/oficinas`
-- **Empleados:** `/api/empleados`
-- **Salones:** `/api/salones`
+- **Frontend CRUD clásico**
+  - `/areas`
+  - `/empleados`
+  - `/oficinas`
+  - `/salones`
 
-### Vistas HTML
-- `/` → Página principal (menú)  
-- `/areas` → Gestión de Áreas  
-- `/oficinas` → Gestión de Oficinas  
-- `/empleados` → Gestión de Empleados  
-- `/salones` → Gestión de Salones  
-- `/reporte` → Reporte de Áreas y Empleados (capturas usadas en el informe final)  
+- **API GraphQL**
+  - `POST /graphql` → ejecutar queries y mutations
+  - `GET /graphql` → interfaz GraphiQL para pruebas
 
 ---
 
-## 🔒 Reglas de integridad implementadas
+## 🧩 Ejemplos GraphQL
 
-- `areas.nombre` → **único**  
-- `empleados.identificacion` → **único**  
-- `oficinas (codigo, id_area)` → **único por área**  
-- `salones (codigo, id_area)` → **único por área**  
-- **Restricciones de eliminación** → no se pueden borrar áreas, oficinas o salones si existen dependencias.  
+### Listar áreas
+```graphql
+{
+  areas {
+    id
+    nombre
+  }
+}
+```
+
+### Reporte de áreas con empleados
+```graphql
+{
+  reporteAreasEmpleados {
+    id
+    nombre
+    empleados {
+      id
+      nombre
+      identificacion
+    }
+  }
+}
+```
+
+### Crear área
+```graphql
+mutation {
+  crearArea(data: { nombre: "Psicología" }) {
+    id
+    nombre
+  }
+}
+```
+
+### Crear empleado
+```graphql
+mutation {
+  crearEmpleado(data: {
+    identificacion: "999"
+    nombre: "Sofía Ríos"
+    tipo: "Profesor"
+    subtipo: "Planta"
+    idArea: 2
+    idOficina: 3
+  }) {
+    id
+    nombre
+    identificacion
+    area { nombre }
+    oficina { codigo }
+  }
+}
+```
+
+### Editar empleado
+```graphql
+mutation {
+  editarEmpleado(data: { id: 1, nombre: "Juan Pérez Gómez" }) {
+    id
+    nombre
+  }
+}
+```
+
+### Eliminar empleado
+```graphql
+mutation {
+  eliminarEmpleado(id: 1)
+}
+```
 
 ---
 
-## 👨‍💻 Autores
-- **Juan Felipe Hernández** – Backend, frontend, base de datos.  
-- **Compañera de grupo** – Diagrama de clases, informe final.  
+## 📦 Dependencias principales
 
-Proyecto académico y personal de práctica con **Flask + MySQL + Frontend Web**.
+- Flask
+- Flask-CORS
+- Flask-SQLAlchemy
+- PyMySQL
+- python-dotenv
+- Ariadne
+- cryptography
+
+Instalación:
+
+```bash
+pip install Flask Flask-CORS Flask-SQLAlchemy PyMySQL python-dotenv ariadne cryptography
+```
+
+---
+
+## 🛠️ Errores comunes
+
+- **Error 1045 Access denied** → Verificar usuario/clave en `DB_URI` y permisos en MySQL.
+- **No database selected** → Asegurarse de ejecutar `USE colegio_cambridge;` antes de consultas SQL.
+- **'cryptography' package is required** → Instalar con `pip install cryptography`.
+- **405 Method Not Allowed en /graphql** → Usar `POST` o habilitar `GET` con GraphiQL (ya incluido).
+
+---
+
+## 📸 Evidencias sugeridas para entrega
+
+- Captura de la home (`index.html`) con los 5 módulos (Áreas, Empleados, Oficinas, Salones, GraphQL).
+- Capturas de GraphiQL ejecutando:
+  - Query de áreas
+  - Query de reporte áreas→empleados
+  - Mutation de creación de empleado
+- Captura del CRUD clásico mostrando el nuevo registro.
+
+---
+
+✨ Con este proyecto se cumple el taller y el parcial: CRUD clásico + capa GraphQL completa.
