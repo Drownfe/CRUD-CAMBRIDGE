@@ -1,6 +1,7 @@
 # graphql_schema.py
 from ariadne import QueryType, MutationType, ObjectType, make_executable_schema, gql
 from models import db, Area, Oficina, Empleado, Salon
+from utils.export_excel import export_reporte_general_xlsx
 from utils.export_excel import (
     export_areas_xlsx, export_oficinas_xlsx, export_empleados_xlsx, export_salones_xlsx
 )
@@ -63,6 +64,16 @@ type_defs = gql("""
     editarEmpleado(data: EditarEmpleadoInput!): MutationPayload!
     eliminarEmpleado(id: ID!): MutationPayload!
   }
+  type Query {
+  areas: [Area!]!
+  oficinas: [Oficina!]!
+  empleados: [Empleado!]!
+  salones: [Salon!]!
+  area(id: ID!): Area
+  empleado(id: ID!): Empleado
+  reporteAreasEmpleados: [AreaReporte!]!
+  exportarReporteGeneral: String!  # 👈 NUEVA QUERY
+}
 """)
 
 
@@ -92,6 +103,12 @@ def salon_to_dict(s: Salon):
     return {"id": s.id_salon, "codigo": s.codigo, "idArea": s.id_area}
 
 # --- Resolvers de Query ---
+
+@query.field("exportarReporteGeneral")
+def resolve_exportar_reporte_general(*_):
+    url = export_reporte_general_xlsx()
+    return url
+
 @query.field("areas")
 def resolve_areas(*_):
     return [area_to_dict(a) for a in Area.query.all()]
