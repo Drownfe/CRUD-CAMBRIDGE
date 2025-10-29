@@ -1,48 +1,25 @@
 # graphql_schema.py
 from ariadne import QueryType, MutationType, ObjectType, make_executable_schema, gql
 from models import db, Area, Oficina, Empleado, Salon
+from utils.export_excel import (
+    export_areas_xlsx, export_oficinas_xlsx, export_empleados_xlsx, export_salones_xlsx
+)
 
 # --- Definición del schema (tipos, queries, mutations) ---
 type_defs = gql("""
-  type Area {
-    id: ID!
-    nombre: String!
-    oficinas: [Oficina!]!
-    empleados: [Empleado!]!
-    salones: [Salon!]!
-  }
+  type Area { id: ID! nombre: String! oficinas: [Oficina!]! empleados: [Empleado!]! salones: [Salon!]! }
+  type Oficina { id: ID! codigo: String! idArea: Int! area: Area! }
+  type Empleado { id: ID! identificacion: String! nombre: String! tipo: String subtipo: String idArea: Int idOficina: Int area: Area oficina: Oficina }
+  type Salon { id: ID! codigo: String! idArea: Int! area: Area! }
 
-  type Oficina {
-    id: ID!
-    codigo: String!
-    idArea: Int!
-    area: Area!
-  }
-
-  type Empleado {
-    id: ID!
-    identificacion: String!
-    nombre: String!
-    tipo: String
-    subtipo: String
-    idArea: Int
-    idOficina: Int
+  type MutationPayload {
+    ok: Boolean!
+    message: String
+    exportUrl: String
     area: Area
+    empleado: Empleado
     oficina: Oficina
-  }
-
-  type Salon {
-    id: ID!
-    codigo: String!
-    idArea: Int!
-    area: Area!
-  }
-
-  # Tipo de reporte: áreas -> empleados
-  type AreaReporte {
-    id: ID!
-    nombre: String!
-    empleados: [Empleado!]!
+    salon: Salon
   }
 
   type Query {
@@ -50,16 +27,13 @@ type_defs = gql("""
     oficinas: [Oficina!]!
     empleados: [Empleado!]!
     salones: [Salon!]!
-
     area(id: ID!): Area
     empleado(id: ID!): Empleado
-
     reporteAreasEmpleados: [AreaReporte!]!
   }
 
   input NuevaAreaInput { nombre: String! }
   input EditarAreaInput { id: ID!, nombre: String! }
-
   input NuevoEmpleadoInput {
     identificacion: String!
     nombre: String!
@@ -68,7 +42,6 @@ type_defs = gql("""
     idArea: Int!
     idOficina: Int!
   }
-
   input EditarEmpleadoInput {
     id: ID!
     identificacion: String
@@ -79,16 +52,19 @@ type_defs = gql("""
     idOficina: Int
   }
 
-  type Mutation {
-    crearArea(data: NuevaAreaInput!): Area!
-    editarArea(data: EditarAreaInput!): Area!
-    eliminarArea(id: ID!): Boolean!
+  type AreaReporte { id: ID! nombre: String! empleados: [Empleado!]! }
 
-    crearEmpleado(data: NuevoEmpleadoInput!): Empleado!
-    editarEmpleado(data: EditarEmpleadoInput!): Empleado!
-    eliminarEmpleado(id: ID!): Boolean!
+  type Mutation {
+    crearArea(data: NuevaAreaInput!): MutationPayload!
+    editarArea(data: EditarAreaInput!): MutationPayload!
+    eliminarArea(id: ID!): MutationPayload!
+
+    crearEmpleado(data: NuevoEmpleadoInput!): MutationPayload!
+    editarEmpleado(data: EditarEmpleadoInput!): MutationPayload!
+    eliminarEmpleado(id: ID!): MutationPayload!
   }
 """)
+
 
 # --- Query & Mutation roots ---
 query = QueryType()
@@ -190,7 +166,8 @@ def resolve_crear_area(*_, data):
         raise Exception("El área ya existe.")
     a = Area(nombre=nombre)
     db.session.add(a); db.session.commit()
-    return area_to_dict(a)
+    url = export_areas_xlsx()
+    return {"ok": True, "area": area_to_dict(a), "exportUrl": url, "message": "Área creada y Excel generado."}
 
 @mutation.field("editarArea")
 def resolve_editar_area(*_, data):
@@ -202,20 +179,21 @@ def resolve_editar_area(*_, data):
         raise Exception("Ya existe otra área con ese nombre.")
     a.nombre = nuevo
     db.session.commit()
-    return area_to_dict(a)
+    url = export_areas_xlsx()
+    return {"ok": True, "area": area_to_dict(a), "exportUrl": url, "message": "Área actualizada y Excel generado."}
 
 @mutation.field("eliminarArea")
 def resolve_eliminar_area(*_, id):
     a = Area.query.get(int(id))
     if not a:
-        return False
-    # Rechazar si tiene dependencias
+        return {"ok": False, "message": "Área no encontrada."}
     if Oficina.query.filter_by(id_area=a.id_area).first() \
        or Empleado.query.filter_by(id_area=a.id_area).first() \
        or Salon.query.filter_by(id_area=a.id_area).first():
         raise Exception("No se puede eliminar: tiene dependencias.")
     db.session.delete(a); db.session.commit()
-    return True
+    url = export_areas_xlsx()
+    return {"ok": True, "exportUrl": url, "message": "Área eliminada y Excel generado."}
 
 @mutation.field("crearEmpleado")
 def resolve_crear_empleado(*_, data):
@@ -230,20 +208,15 @@ def resolve_crear_empleado(*_, data):
         id_area=int(data["idArea"]),
         id_oficina=int(data["idOficina"])
     )
-    db.session.add(e)
-    try:
-        db.session.commit()
-    except IntegrityError:
-        db.session.rollback()
-        raise Exception("Violación de integridad (FK/UNIQUE).")
-    return empleado_to_dict(e)
+    db.session.add(e); db.session.commit()
+    url = export_empleados_xlsx()
+    return {"ok": True, "empleado": empleado_to_dict(e), "exportUrl": url, "message": "Empleado creado y Excel generado."}
 
 @mutation.field("editarEmpleado")
 def resolve_editar_empleado(*_, data):
     e = Empleado.query.get(int(data["id"]))
     if not e:
-        raise Exception("Empleado no encontrado.")
-
+        return {"ok": False, "message": "Empleado no encontrado."}
     if data.get("identificacion"):
         ident = data["identificacion"].strip()
         existe = Empleado.query.filter(Empleado.identificacion == ident,
@@ -251,27 +224,23 @@ def resolve_editar_empleado(*_, data):
         if existe:
             raise Exception("Otra persona ya tiene esa identificación.")
         e.identificacion = ident
-
     if data.get("nombre"): e.nombre = data["nombre"].strip().title()
     if "tipo" in data: e.tipo = (data.get("tipo") or "").strip()
     if "subtipo" in data: e.subtipo = (data.get("subtipo") or "").strip()
     if data.get("idArea") is not None: e.id_area = int(data["idArea"])
     if data.get("idOficina") is not None: e.id_oficina = int(data["idOficina"])
-
-    try:
-        db.session.commit()
-    except IntegrityError:
-        db.session.rollback()
-        raise Exception("Violación de integridad (FK/UNIQUE).")
-    return empleado_to_dict(e)
+    db.session.commit()
+    url = export_empleados_xlsx()
+    return {"ok": True, "empleado": empleado_to_dict(e), "exportUrl": url, "message": "Empleado actualizado y Excel generado."}
 
 @mutation.field("eliminarEmpleado")
 def resolve_eliminar_empleado(*_, id):
     e = Empleado.query.get(int(id))
     if not e:
-        return False
+        return {"ok": False, "message": "Empleado no encontrado."}
     db.session.delete(e); db.session.commit()
-    return True
+    url = export_empleados_xlsx()
+    return {"ok": True, "exportUrl": url, "message": "Empleado eliminado y Excel generado."}
 
 # --- Construcción del schema ejecutable ---
 # ---- ObjectType para resolvers de campos (relaciones) ----
